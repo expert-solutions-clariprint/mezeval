@@ -1,0 +1,419 @@
+<?
+/*
+CREATE TABLE `t_element` (
+  `id` int(11) NOT NULL auto_increment,
+  `order_index` int(11) default NULL,
+  `evaluation` int(11) default NULL,
+  `code_socle` varchar(20) default NULL,
+  `progression` int(11) default NULL,
+  `mode` varchar(200) default NULL,
+  `valeur_max` int(11) default NULL,
+  `description` text,
+  `created` datetime default NULL,
+  `creator` int(11) default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `evaluation` (`evaluation`),
+  KEY `progression` (`progression`),
+  CONSTRAINT FOREIGN KEY (`evaluation`) REFERENCES `t_evaluation` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT FOREIGN KEY (`progression`) REFERENCES `t_progression` (`id`)  ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+*/
+
+class CElement
+{
+	var $id;
+	var $order_index;
+	var $evaluation;
+	var $progression;
+	var $code_socle;
+	var $mode;	 // STANDARD  / NOTES
+	var $valeur_max;
+	var $description;
+	var $next; // utilisation pour l'ordre
+	var $seuil_a;
+	var $seuil_b;
+	var $created;
+	var $creator;
+	
+	/* class methods */
+	
+	function maxOrderForEvaluation($evaluation_id)
+	{
+		global $DB;
+		return $DB->oneValue("SELECT count(id) FROM t_element WHERE evaluation=$evaluation_id") - 1;
+	}
+	function createObject($evaluation_id,$progression_id,$mode="STANDARD",$valeur_max="",$desc="",$seuil_a=null,$seuil_b=null)
+	{
+		$o = new CElement();
+		$o->order_index = CElement::maxOrderForEvaluation($evaluation_id) + 1;
+		$o->evaluation = $evaluation_id;
+		$o->progression = $progression_id;
+		$o->mode = $mode;
+		$o->valeur_max = $valeur_max;
+		$o->description = $desc;
+		$o->seuil_a = $seuil_a;
+		$o->seuil_b = $seuil_b;
+		$o->create();
+		return $o;
+	}
+	function deleteWithProgression($id)
+	{
+		global $DB;
+		CEvaluationEleve::deleteWithProgression($id);
+		$DB->query("DELETE FROM t_element WHERE progression = $id");
+	}
+	function unlinkProgression($id)
+	{
+		global $DB;
+		$DB->query(sprintf("UPDATE t_element SET progression=null WHERE progression = %d",$id));
+	}
+	
+	function deleteWithEvaluation($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_element WHERE evaluation = $id");
+	}
+
+	function deleteObjectsWithClasse($id)
+	{
+		global $DB;
+		$DB->query("DELETE t_element.* FROM t_element,t_evaluation WHERE t_evaluation.id = t_element.evaluation AND t_evaluation.classe = $id");
+	}
+
+	function deleteWithId($id)
+	{
+		global $DB;
+		if ($o = CElement::objectWithId($id)) $o->del();
+//		$DB->query("DELETE FROM t_element WHERE id = $id");
+	}
+	function objectsWithQuery($query,$key="")
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				if ($key)
+					$res[$tmp[$key]] = CElement::objectWithArray($tmp);
+				else $res[] = CElement::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CElement::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($arr = CElement::objectsWithQuery("SELECT * FROM t_element WHERE id=$id"))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+	
+	function objectWithIdAndEvaluation($elem_id,$eval_id)
+	{
+		global $DB;
+		if ($arr = CElement::objectsWithQuery(sprintf("SELECT * FROM t_element WHERE id=%d AND evaluation=%d",$elem_id,$eval_id)))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_element WHERE id=$id");
+	}
+	
+	function objects()
+	{
+		return CElement::objectsWithQuery("select * from t_element order by code");
+	}
+		
+	function objectWithArray(&$arr)
+	{
+		$u = new CElement();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CElement::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	function countEvaluationsForProgression($progression_id,$from=null,$to=null)
+	{
+		global $DB;
+		if ($from && $to)
+			return $DB->oneValue(sprintf("SELECT COUNT(t_element.id)
+				FROM t_element RIGHT JOIN t_evaluation ON t_element.evaluation = t_evaluation.id
+				WHERE progression = %d 
+				AND t_evaluation.date_examen BETWEEN %s and %s ",$progression_id,$DB->DATE($from),$DB->DATE($to)));
+		else return $DB->oneValue("SELECT COUNT(id) FROM t_element WHERE progression = $progression_id");
+	}
+	function countEvaluationsForClasseAndSocle($classe_id,$socle_code,$subs=false)
+	{
+		global $DB;
+		$comp="";
+		if ($subs) $comp= sprintf(" OR t_progression.code_socle LIKE '%s.%%' ", $socle_code);
+		return $DB->oneValue(sprintf("SELECT COUNT(t_element.id) FROM t_element,t_progression
+					WHERE t_element.progression = t_progression.id 
+				AND (t_progression.code_socle = '%s' %s)
+					AND t_progression.classe = %d",$socle_code,$comp,$classe_id));
+	}
+
+	function objectsForEvaluation($evaluation_id,$array_key="")
+	{
+		return CElement::objectsWithQuery(sprintf("select * from t_element where evaluation=%d order by order_index asc",$evaluation_id), 
+											$array_key);
+	}
+
+	function firstObjectForEvaluation($evaluation_id)
+	{
+		$o = CElement::objectsWithQuery("select * from t_element where evaluation=$evaluation_id AND order_index = 0 by order_index asc");
+		if (count($o) == 0) return $o[0];
+		return null;
+	}
+	function objectForEleveAndProgression($eleve_id,$prog_id)
+	{
+		return CElement::objectsWithQuery(sprintf("SELECT t_element.* 
+												FROM t_element 
+												INNER JOIN t_evaluation ON t_element.evaluation = t_evaluation.id
+												WHERE t_element.progression = %d
+												ORDER BY  t_evaluation.date_examen desc ",$prog_id));
+	}
+	function objectsForProgression($prog_id)
+	{
+		return CElement::objectsWithQuery(sprintf("SELECT t_element.* 
+												FROM t_element 
+												INNER JOIN t_evaluation ON t_element.evaluation = t_evaluation.id
+												WHERE t_element.progression = %d
+												ORDER BY  t_evaluation.date_examen desc ",$prog_id));
+	}
+
+
+
+	/* object method */
+	
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+		if (array_key_exists("order_index",$arr))
+			$this->order_index = $arr["order_index"];
+		if (array_key_exists("evaluation",$arr))
+			$this->evaluation = $arr["evaluation"];
+		if (array_key_exists("progression",$arr))
+			$this->progression = $arr["progression"];
+		if (array_key_exists("mode",$arr))
+			$this->mode = $arr["mode"];
+		if (array_key_exists("valeur_max",$arr))
+			$this->valeur_max = (int)$arr["valeur_max"];
+
+		if (array_key_exists("seuil_a",$arr))
+			$this->seuil_a = (int)$arr["seuil_a"];
+		if (array_key_exists("valeur_max",$arr))
+			$this->seuil_b = (int)$arr["seuil_b"];
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	
+	function progression()
+	{
+		if ($this->progression) return CProgression::objectWithId($this->progression);
+		else return null;
+	}
+	function mode()
+	{
+		$mms = CEvaluation::modesCalcul();
+		if ($this->mode == "NOTES")
+		{
+			return sprintf("par point sur un total de %s (Acquis au délà de %s, En cours au dela de %s )",$this->valeur_max,$this->seuil_a,$this->seuil_b);
+		}
+		$res = $mms[$this->mode];
+		if ($this->valeur_max) $res .= " ". $this->valeur_max;
+		return $res;
+	}
+
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$prev = null;
+				
+			$query = sprintf("INSERT INTO t_element (description,order_index,evaluation,progression,mode,valeur_max,seuil_a,seuil_b,creator,created) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())",
+								$DB->STRING($this->description),
+								$DB->INT($this->order_index),
+								$DB->ID($this->evaluation),
+								$DB->ID($this->progression),
+								$DB->STRING($this->mode),
+								$DB->INT($this->valeur_max),
+								$DB->INT($this->seuil_a),
+								$DB->INT($this->seuil_b),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				if ($prev)
+				{
+					$prev->next = $this->id;
+					$prev->update();
+				}
+				return true;
+			}
+			
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_element SET  description = %s, progression = %s, mode = %s, valeur_max = %s, seuil_a = %s,seuil_b = %s WHERE id = %s",
+								$DB->STRING($this->description),
+								$DB->ID($this->progression),
+								$DB->STRING($this->mode),
+								$DB->INT($this->valeur_max),
+								$DB->INT($this->seuil_a),
+								$DB->INT($this->seuil_b),
+								$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+	
+	function del()
+	{
+		global $DB;
+		$this->removeOrderIndex();
+//		$DB->query("UPDATE t_element SET next = ". $DB->INT($this->next) " WHERE next = " $this->id);
+		CEvaluationEleve::deleteWithElement($this->id);
+		$DB->query("DELETE FROM t_element WHERE id = " . $this->id);
+	}
+	function setOrderIndex($i)
+	{
+		global $DB;
+		$this->order_index = $i;
+		$DB->query("UPDATE t_element SET order_index = $i WHERE id = ". $this->id . " AND evaluation=" . $this->evaluation);
+	}
+	function up()
+	{
+		global $DB;
+		if ($this->order_index > 0)
+		{
+			$k = $this->order_index - 1;
+			$DB->query("UPDATE t_element SET order_index = order_index + 1 WHERE order_index = $k AND evaluation=" . $this->evaluation);
+			$this->order_index - 1;
+			$DB->query("UPDATE t_element SET order_index = order_index - 1 WHERE id=" . $this->id);
+		}
+	}
+
+	function down()
+	{
+		$c = CElement::maxOrderForEvaluation($this->evaluation);
+		CDebug::TRACE(0,"CElement::down() oder_index=". $this->order_index . " max=$c");
+		global $DB;
+		if ($this->order_index < $c)
+		{
+			CDebug::TRACE(0,"CElement::down() : can down");
+			$k = $this->order_index + 1;
+			$DB->query("UPDATE t_element SET order_index = order_index - 1 WHERE order_index = $k AND evaluation=" . $this->evaluation);
+			$this->order_index + 1;
+			$DB->query("UPDATE t_element SET order_index = order_index + 1 WHERE id=" . $this->id);
+		}
+	}
+	function removeOrderIndex()
+	{
+		global $DB;
+		$DB->query("UPDATE t_element SET order_index = order_index - 1 WHERE order_index > ". $this->order_index . " AND  evaluation=" . $this->evaluation);
+	}
+
+	function next()
+	{
+		return CElement::objectWithId($this->order_index + 1);
+	}
+	
+	function info()
+	{
+		return $this->description;
+	}
+	
+	function resultats()
+	{
+		return CEvaluationEleve::objectsForElement($this->id);
+	}
+	
+	function export($results = false)
+	{
+		$this->print_xml(3,$results);
+	}
+	function evaluation()
+	{
+		return CEvaluation::objectWithId($this->evaluation);
+	}
+	function print_xml($deep=0,$results = false)
+	{
+		$prg = "";
+		if ($this->progression) $prg = "section_" . $this->progression; 
+
+		printf("%s<ELEMENT progression='%s' socle='%s' mode='%s' valeur_max='%s' description='%s' seuil_a='%s' seuil_b='%s' order_index='%s' >\n",
+				str_repeat("\t",$deep),
+					$prg,
+					$this->code_socle,
+						$this->mode,
+							$this->valeur_max,
+								urlencode($this->description),
+									$this->seuil_a,
+										$this->seuil_b,
+											$this->order_index);
+		$deep++;
+		if ($results)
+		{
+			foreach($this->resultats() as $r) $r->print_xml($deep);
+		}
+		$deep--;
+		printf("%s</ELEMENT>\n",str_repeat("\t",$deep));
+	}
+
+	function getEvaluation($val)
+	{
+		if ($this->mode == "NOTES")
+		{
+			if ($val == 'X') return "x";
+			if ($val == 'x') return "x";
+			if ($val == '-1') return "x";
+			if ($val >= $this->seuil_a) return "a";
+			if ($val >= $this->seuil_b) return "b";
+			if ($val >= 0) return "c";
+			return '';
+		} 
+		return $val;
+	}
+}

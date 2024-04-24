@@ -1,0 +1,146 @@
+<?
+/*
+CREATE TABLE `t_competence` (
+	id INT NOT NULL AUTO_INCREMENT,
+	code varchar(200),
+	intitule varchar(200),
+	classe int,
+	description TEXT,
+	parentcp int,
+	created datetime,
+	creator int,
+	PRIMARY KEY (`id`));
+*/		
+class CCompetenceSocle extends CCompetence
+{
+	var $childNodes;
+	var $parentNode;
+/*	var $code; */
+	var $codeEdu;
+	var $socle;
+	
+	function CCompetenceSocle()
+	{
+		$this->childNodes = array();
+	}
+	
+	function appendChild($c)
+	{
+		$this->childNodes[] = $c;
+		$c->parentNode = & $this;
+	}
+	
+	function type()
+	{
+		return $this->socle->type();
+	}
+	
+	/*
+	function htmlOptions($deep=1,$select="")
+	{
+		$opt = "";
+		if ($select == $this->code) $opt = "selected";
+		if (count($this->childNodes)) $opt .= "  disabled=\"disabled\"";
+		?><option value="<?= $this->code ?>" <?= $opt ?>><?= str_repeat("&nbsp;",$deep * 3) ?><?= $this->intitule ?></option><? 
+		$deep += 1;
+		foreach($this->childNodes as $c)
+		{ 	
+			$c->htmlOptions($deep,$select);
+		} 
+	} */
+	function htmlOptions($deep=1,$select="",$classe_id=0)
+	{
+		CDebug::TRACE(0,"CCompetenceSocle::htmlOptions($deep=1,$select,$classe_id)");
+		$opt = "";
+		if ($select == $this->code) $opt = "selected";
+		$deep += 1;	
+		if (count($this->childNodes)) 
+		{
+			?><optgroup label="<?= str_repeat("&nbsp;",$deep * 3) ?><?= $this->intitule ?>"><?
+			foreach($this->childNodes as $c) $c->htmlOptions($deep,$select,$classe_id);
+			?></optgroup><?
+		} else {
+			$t = $this->intitule;
+			$t = $this->intitule . " [" . $this->code . "]";
+			if ($classe_id) $t = sprintf("%s (%d)",$t,$this->countProgressionsForClasse($classe_id));
+			?><option value="<?= $this->code ?>" <?= $opt ?>><?= str_repeat("&nbsp;",$deep * 3) ?><?= $t ?></option><?
+		}
+	}
+	function htmlOptionsWithCountOfEvaluationForClasse($deep=1,$selected="",$classe_id=0)
+	{
+		CDebug::TRACE(0,"CCompetenceSocle::htmlOptionsWithCountOfEvaluationForClasse($deep=1,$select,$classe_id)");
+		$opt = "";
+		if ($select == $this->code) $opt = "selected";
+		$deep += 1;	
+		if (count($this->childNodes)) 
+		{
+			?><optgroup label="<?= $this->intitule ?>"><?
+			foreach($this->childNodes as $c) $c->htmlOptionsWithCountOfEvaluationForClasse($deep,$select,$classe_id);
+			?></optgroup><?
+		} else {
+			$t = $this->intitule . " [" . $this->code . "]";
+			if ($classe_id) $t = sprintf("%s (%d)",$t,$this->countEvaluationsForClasse($classe_id));
+			
+			?><option value="<?= $this->code ?>" <?= $opt ?>><?= $t ?></option><?
+		}
+	}	
+	function countProgressionsForClasse($classe_id)
+	{
+		CDebug::TRACE(0,"CCompetenceSocle::countProgressionsForClasse($classe_id)");
+		return CProgression::countForClasseAndCompetence($classe_id,$this->code);
+	}
+	function countEvaluationsForClasse($classe_id)
+	{
+		CDebug::TRACE(0,"CCompetenceSocle::countProgressionsForClasse($classe_id)");
+		return CProgression::countForClasseAndCompetence($classe_id,$this->code);
+	}
+	function searchKey()
+	{
+		if (!stripos($this->code, ".")) return "%";
+		
+		if (count($this->childNodes) > 0) return $this->code . ".%";
+		return $this->code;
+	}
+	function childNodes()
+	{
+		return $this->childNodes;
+	}
+	function __toString()
+	{
+		return "[CCompetenceSocle]";
+		
+	}
+	
+	function csv()
+	{
+		printf("\"%s\";\"%s\"\n",$this->code,$this->intitule);
+		foreach($this->childNodes() as $n) $n->csv();
+	}
+	
+	function toJSon()
+	{
+		printf('{"code"=%s,"intitule"=%s,childNodes=[',
+					json_encode($this->code),
+					json_encode($this->intitule));
+		$first= "";
+		foreach($this->childNodes() as $n)
+		{
+			if ($first) $first = false;
+			else printf(",");
+			$n->toJSon();
+		} 
+		printf("]}");
+	}
+	function getElementWithCode($code)
+	{
+		if ($this->code == $code) return $this;
+		else
+		{
+			foreach($this->childNodes() as $n)
+			{
+				if ($r = $n->getElementWithCode($code)) return $r;
+			}
+			return null;
+		}
+	}
+}

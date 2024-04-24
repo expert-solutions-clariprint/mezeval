@@ -1,0 +1,360 @@
+<?
+/*
+CREATE TABLE `t_progression` (
+	id INT NOT NULL AUTO_INCREMENT,
+	code varchar(200),
+	intitule varchar(200),
+	classe int,
+	description TEXT,
+	parentcp int,
+	created datetime,
+	creator int,
+	PRIMARY KEY (`id`));
+*/		
+class CProgression
+{
+	var $id;
+	var $code;
+	var $intitule;
+	var $intitule_officel;
+	var $code_socle;
+	var $code_b2i;
+	var $code_langue;
+	var $parentcp;
+	var $classe;
+	var $description;
+	var $order_index;
+	var $created;
+	var $creator;
+	
+	/* class methods */
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CProgression::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function checkProgressionForPeriode($progression_id,$periodes_id)
+	{
+		return CProgressionPeriode::existForProgressionAndPeriode($progression_id,$periodes_id);
+	}
+	function objectWithQuery($query)
+	{
+		$r = CProgression::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		return CProgression::objectWithQuery(sprintf("SELECT * FROM t_progression WHERE id=%d",$id));
+	}
+	function objectWithIdAndClasse($id,$classe_id)
+	{
+		global $DB;
+		return CProgression::objectWithQuery(
+				sprintf("SELECT * FROM t_progression WHERE id=%d AND classe=%d",$id,$classe_id));
+	}
+
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		foreach(CProgression::objectsForParent($id) as $s) CProgression::deleteObjectWithId($s->id);
+
+		CProgressionPeriode::deleteForProgression($id);
+		CElement::unlinkProgression($id);
+		$DB->query("DELETE FROM t_progression WHERE id=$id");
+	}
+	function deleteObjectWithClasse($classe_id)
+	{
+		global $DB;
+		CProgressionPeriode::deleteForClasseByProgression($classe_id);
+		$DB->query("UPDATE t_progression SET parentcp = null WHERE classe=$classe_id");
+		$DB->query("DELETE FROM t_progression WHERE classe=$classe_id");
+	}
+
+
+	function objects()
+	{
+		return CProgression::objectsWithQuery("select * from t_progression order by code");
+	}
+
+	function objectWithArray(&$arr)
+	{
+		$u = new CProgression();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CProgression::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	function objectsForClasse($classe_id)
+	{
+		return CProgression::objectsWithQuery("select * from t_progression where classe=$classe_id order by code,intitule");
+	}
+	function parentsForClasse($classe_id,$periode_id=null)
+	{
+		if ($periode_id)
+			return CProgression::objectsWithQuery(sprintf("SELECT t_progression.* FROM t_progression 
+				RIGHT JOIN t_progression_periode ON t_progression_periode.progression = t_progression.id
+				WHERE t_progression.classe=%d
+				AND t_progression.parentcp IS NULL 
+				AND t_progression_periode.periode=%d
+				ORDER BY t_progression.order_index,t_progression.code,t_progression.intitule desc",$classe_id,$periode_id));
+		else return CProgression::objectsWithQuery("select * from t_progression where classe=$classe_id and parentcp is null order by order_index,code,intitule desc");
+	}
+	function objectForParent($parent_id)
+	{
+		return self::objectsForParent($parent_id);
+	}
+	function objectsForParent($parent_id)
+	{
+		return CProgression::objectsWithQuery("select * from t_progression where parentcp=$parent_id order by order_index,code,intitule desc");
+	}
+	
+	function countForClasseAndSocle($classe_id,$socle,$withsub=false)
+	{ 	return CProgression::countForClasseAndCompetence($classe_id,$socle,$withsub);	}
+
+	function countForClasseAndCompetence($classe_id,$competence,$withsub=false)
+	{
+		global $DB;
+		$comp = "";
+		if ($withsub) $comp = sprintf(" OR code_socle LIKE '%s.%%'",$competence);
+		return $DB->oneValue("SELECT COUNT(id) FROM t_progression WHERE classe=$classe_id AND (code_socle LIKE '$competence' $comp)");
+	}
+	
+	function objectsForClasseAndParent($classe_id,$parent_id)
+	{
+		if ($parent_id)
+			return self::objectsForParent($parent_id);
+		else
+			return self::parentsForClasse($classe_id);			
+	}
+	
+	function countForClasseAndParent($classe_id,$parent_id)
+	{
+		global $DB;
+		if ($parent_id)
+			return $DB->oneValue(sprintf("SELECT COUNT(id) FROM t_progression WHERE classe=%d and parentcp=%d",$classe_id,$parent_id));
+		else 
+			return $DB->oneValue(sprintf("SELECT COUNT(id) FROM t_progression WHERE classe=%d and parentcp is null",$classe_id));
+	}
+
+	function asOptionsForClasse($classe_id,$progression = null,$deep=1,$selected=null)
+	{
+		if (!$progression)
+			foreach(CProgression::parentsForClasse($classe_id) as $c) CProgression::asOptionsForClasse($classe_id,$c,$deep,$selected);
+		else {
+			$subs = CProgression::objectsForParent($progression->id);
+			if (count($subs) > 0) { ?><optgroup label="<?= str_repeat("&nbsp;",$deep * 3) ?><?= $progression->intitule ?>"><? }
+			else {
+			?><option socle="<?= $progression->code_socle ?>" value="<?= $progression->id ?>" <? 
+			if ($selected == $progression->id) echo " selected ";
+			if (count($subs) > 0) { ?>disabled="disabled" <? };
+			?>><?= str_repeat("&nbsp;",$deep * 3) ?><? if ($v = $progression->countEvaluations()) echo "($v) ";  ?><?= $progression->intitule ?></option><? }
+			$deep += 1;
+			foreach($subs as $c) CProgression::asOptionsForClasse($classe_id,$c,$deep,$selected);
+			if (count($subs) > 0) { ?></optgroup><? }
+		}
+	}
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("code",$arr))
+			$this->code = stripcslashes($arr["code"]);
+		if (array_key_exists("intitule",$arr))
+			$this->intitule = stripcslashes($arr["intitule"]);
+		if (array_key_exists("intitule_officel",$arr))
+			$this->intitule_officel = stripcslashes($arr["intitule_officel"]);
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+		if (array_key_exists("classe",$arr))
+			$this->classe = $arr["classe"];
+		if (array_key_exists("parentcp",$arr))
+			$this->parentcp = $arr["parentcp"];
+		if (array_key_exists("code_socle",$arr))
+			$this->code_socle = $arr["code_socle"];
+
+		if (array_key_exists("code_b2i",$arr))
+			$this->code_b2i = $arr["code_b2i"];
+		if (array_key_exists("code_langue",$arr))
+			$this->code_langue = $arr["code_langue"];
+
+		if (array_key_exists("order_index",$arr))
+			$this->order_index = (int)$arr["order_index"];
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			if (!$this->order_index)
+			{
+				$this->order_index = self::countForClasseAndParent($this->classe,$this->parentcp);
+				$this->order_index++;
+			}
+			$query = sprintf("INSERT INTO t_progression (code,intitule,intitule_officel,parentcp,classe,description,code_socle,code_b2i,code_langue,order_index,creator,created) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())",
+								$DB->STRING($this->code),
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->intitule_officel),
+								$DB->ID($this->parentcp),
+								$DB->INT($this->classe),
+								$DB->STRING($this->description),
+								$DB->STRING($this->code_socle),
+								$DB->STRING($this->code_b2i),
+								$DB->STRING($this->code_langue),
+								$DB->INT($this->order_index),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				CProgressionPeriode::createForProgression($this);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_progression SET code = %s, parentcp= %s, intitule = %s,  intitule_officel = %s, description = %s,code_socle = %s,code_b2i=%s,code_langue=%s,order_index=%s WHERE id = %s",
+								$DB->STRING($this->code),
+								$DB->ID($this->parentcp),
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->intitule_officel),
+								$DB->STRING($this->description),
+								$DB->STRING($this->code_socle),
+								$DB->STRING($this->code_b2i),
+								$DB->STRING($this->code_langue),
+								$DB->STRING($this->order_index),
+								$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+	
+	function countEvaluations($from=null,$to=null)
+	{
+		return CElement::countEvaluationsForProgression($this->id,$from,$to);
+	}
+	function childNodes()
+	{
+		return CProgression::objectForParent($this->id);
+	}
+	function info()
+	{
+		return $this->intitule;
+	}
+	
+	function periodesIds()
+	{
+		return CProgressionPeriode::arrayForProgression($this->id);
+	}
+	
+	function __tostring()
+	{
+		return sprintf("[CProgression|%s|%s]",$this->id,$this->intitule);
+	}
+	function evolutionEvaluationForEleve($eleve_id,$from=null,$to=null)
+	{
+		return CEvaluationEleve::resultatsForProgressionEleve( $this->id,$eleve_id,$from,$to,0,0,1,true);
+	}
+	
+	function parentNode()
+	{
+		if ($this->parentcp) return self::objectWithId($this->parentcp);
+		return null;
+	}
+	
+	function hasParents($id)
+	{
+		if (!$this->parentcp) return false;
+		if ($this->parentcp == $id) return true;
+		$p = $this->parentNode();
+		return $p->hasParents($id);
+	}
+
+	function resetIndexesForClasseAndParent()
+	{
+		$brothers = self::objectsForClasseAndParent($this->classe,$this->parentcp);
+		$i = 0;
+		for(; $i < count($brothers); $i++)
+		{
+			$p = $brothers[$i];
+			$p->order_index = $i + 1;
+			$p->updateIndex();
+		}
+	}
+	
+	function updateIndex()
+	{
+		global $DB;
+		$DB->query(sprintf("UPDATE t_progression SET order_index=%d WHERE id = %d",$this->order_index,$this->id));
+	}
+
+	function setOrderIndex($i)
+	{
+		self::resetIndexesForClasseAndParent($this->classe,$this->parentcp);
+		
+		global $DB;
+		$old_index = $this->order_index;
+		$parent_cst = "";
+		if ($this->parentcp)
+			$parent_cst = sprintf(" = %d",$this->parentcp);
+		else 
+			$parent_cst = sprintf(" is null");
+		$DB->query(sprintf("UPDATE t_progression SET order_index = order_index - 1
+			 		WHERE parentcp %s 
+					AND classe=%d
+					AND order_index > %d
+					AND id <> %d",$parent_cst,$this->classe,$old_index,$this->id));
+		$DB->query(sprintf("UPDATE t_progression SET order_index = order_index + 1
+			 		WHERE parentcp %s 
+					AND classe=%d
+					AND order_index >= %d
+					AND id <> %d",$parent_cst,$this->classe,$i,$this->id));
+		$DB->query(sprintf("UPDATE t_progression SET order_index=%d WHERE id = %d",$i,$this->id));
+		$this->order_index = $i;
+	}
+	
+	function setParent($id)
+	{
+		global $DB;
+		$this->parentcp = $id;
+		$this->update();
+	}
+	function checkForPeriode($periode_id)
+	{
+		return self::checkProgressionForPeriode($this->id,$periode_id);
+	}
+}

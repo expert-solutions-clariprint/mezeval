@@ -1,0 +1,293 @@
+<?
+/*
+CREATE TABLE `t_periode` (
+	id INT NOT NULL AUTO_INCREMENT,
+	classe int NOT NULL,
+	intitule text,
+	debut date,
+	fin date,
+	created datetime,
+	creator int,
+	PRIMARY KEY (`id`))
+*/
+
+class CPeriode
+{
+	var $id;
+	var $intitule;
+	var $code;
+	var $classe;
+	
+	var $debut;
+	var $fin;
+
+	var $created;
+	var $creator;
+
+	/* class methods */
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CPeriode::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectsForClasse($classe_id)
+	{
+		return CPeriode::objectsWithQuery("SELECT * FROM t_periode WHERE classe=$classe_id order by debut asc");
+	}
+
+	function objectWithQuery($query)
+	{
+		$r = CPeriode::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($arr = CPeriode::objectsWithQuery("SELECT * FROM t_periode WHERE id=$id"))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+	function objectWithIdAndClasse($id,$classe_id)
+	{
+		global $DB;
+		if ($arr = CPeriode::objectsWithQuery(sprintf("SELECT * FROM t_periode WHERE classe=%d AND id=%d",$classe_id,$id)))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+
+	function deleteObjectWithIdAndClasse($id,$classe_id)
+	{
+		global $DB;
+		$DB->query(sprintf("DELETE FROM t_periode WHERE id=%s and classe=%d",$id,$classe_id));
+	}
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_periode WHERE id=$id");
+	}
+	function deleteObjectsWithClasse($classe_id)
+	{
+		global $DB;
+		CProgressionPeriode::deleteForClasseByPeriode($classe_id);
+		$DB->query("DELETE FROM t_periode WHERE classe=$classe_id");
+	}
+	
+	function objects()
+	{
+		return CPeriode::objectsWithQuery("select * from t_periode order by created desc");
+	}
+	
+	function objectWithJson($obj)
+	{
+		
+	}
+	
+	function objectWithArray(&$arr)
+	{
+		$u = new CPeriode();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CPeriode::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	function createObject($classe_id,$code,$intitule,$date_debut_ts,$date_fin_ts)
+	{
+		$u = new CPeriode();
+		$u->classe = $classe_id;
+		$u->code = $code;
+		$u->intitule = $intitule;
+		$u->debut = $date_debut_ts;
+		$u->fin = $date_fin_ts;
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	function createFromFileForClasse($set_filename,$classe_id)
+	{
+		$importer = new CClasseXmlImporter();
+		$importer->classe = CClasse::objectWithId($classe_id);
+		$importer->initWithFilename($set_filename);
+	}
+	
+	function createFromSetForClasse($set,$classe_id)
+	{
+		return self::createFromFileForClasse(APP_PATH . "/periodes/". basename($set),$classe_id);
+	}
+	function standardSets()
+	{
+		$path = APP_PATH . "/periodes";
+		$res = array();
+		if ($d = dir($path))
+		{
+			while(false !== ($entry = $d->read()))
+			{
+				if ($entry[0] != "." & substr($entry,-4,4) == ".xml")
+				{
+					$x = new StdClass;
+					$x->filename = $entry;
+					$x->name = $entry;
+					$res[] = $x;
+				}
+					
+			}
+		}
+		return $res;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("intitule",$arr))
+			$this->intitule = $arr["intitule"];
+		if (array_key_exists("code",$arr))
+			$this->code = $arr["code"];
+
+		if (array_key_exists("debut",$arr))
+			$this->debut = strtotime($arr["debut"]);
+		if (array_key_exists("fin",$arr))
+			$this->fin = strtotime($arr["fin"]);
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	function initWithJson($arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("intitule",$arr))
+			$this->intitule = $arr["intitule"];
+		if (array_key_exists("code",$arr))
+			$this->code = $arr["code"];
+
+		if (array_key_exists("debut",$arr))
+			$this->debut = CDateUtil::unixDate($arr["debut"]);
+		if (array_key_exists("fin",$arr))
+			$this->fin = CDateUtil::unixDate($arr["fin"]);
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = CDateUtil::unixDate($arr["created"]);
+	}
+	
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+
+			$query = sprintf("INSERT INTO t_periode (
+							classe,intitule, code,
+							debut,fin,
+							created,creator)
+						VALUES (
+							%s,%s,%s,
+							%s,%s,
+							%s,NOW())",
+							$DB->INT($this->classe),$DB->STRING($this->intitule),$DB->STRING($this->code),
+							$DB->DATE($this->debut),$DB->DATE($this->fin),
+							$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				CProgressionPeriode::createForPeriode($this);
+				return true;
+			}			
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_periode SET
+							intitule=%s,
+							code = %s,
+							debut=%s,fin=%s
+							WHERE id = %s",
+							$DB->STRING($this->intitule),
+							$DB->STRING($this->code),
+							$DB->DATE($this->debut),$DB->DATE($this->fin),
+							$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+	
+	function del()
+	{
+		CProgressionPeriode::deleteForPeriode($this->id);
+		return self::deleteObjectWithId($this->id);
+	}
+	function intitule()
+	{
+		if ($this->intitule) return $this->intitule;
+		return "du ". $this->debut() . " au " . $this->fin() ;
+	}
+	
+	function debut($fmt="%d/%m/%Y")
+	{
+		if ($this->debut) return strftime($fmt,$this->debut);
+		return "";
+	}
+	function fin($fmt="%d/%m/%Y")
+	{
+		if ($this->fin) return strftime($fmt,$this->fin);
+		return "";
+	}
+	
+	function  info()
+	{
+		return $this->intitule();
+	}
+	function code()
+	{
+		if ($this->code) return $this->code;
+		if ($this->intitule) return substr($this->intitule,0,5);
+		return $this->id;
+	}
+	
+	function print_xml($deep=0)
+	{
+		printf("%s<PERIODE code='%s' intitule='%s' uid='periode_%s' debut='%s' fin='%s'/>\n",
+				str_repeat("\t",$deep),
+					urlencode($this->code),
+					urlencode($this->intitule),
+					$this->id,
+					strftime("%Y%m%d",$this->debut),
+					strftime("%Y%m%d",$this->fin));
+	}
+}

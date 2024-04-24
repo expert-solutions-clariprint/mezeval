@@ -1,0 +1,212 @@
+<?
+/*
+CREATE TABLE `t_evaluationeleveinfo` (
+	evaluation int,
+	eleve int ,
+	description TEXT,
+	created datetime,
+	creator int,
+	PRIMARY KEY (evaluation,eleve),
+  CONSTRAINT FOREIGN KEY (`evaluation`) REFERENCES `t_evaluation` (`id`) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (`eleve`) REFERENCES `t_eleve` (`id`)  ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+*/
+class CEvaluationEleveInfo
+{
+	var $evaluation;
+	var $eleve;
+	var $description;
+
+	var $created;
+	var $creator;
+	
+	/* class methods */
+	
+	function createObject(	$evaluation_id,
+							$eleve_id,
+							$desc="")
+	{
+		$o = new CEvaluationEleveInfo();
+		$o->evaluation = $evaluation_id;
+		$o->eleve = $eleve_id;
+		$o->description = $desc;
+		$o->create();
+		return $o;
+	}
+	
+	
+	function deleteWithEvaluation($id)
+	{
+		global $DB;
+		$DB->query(sprintf("DELETE FROM t_evaluationeleveinfo WHERE evaluation = %d", $id));
+	}
+	function deleteWithEleve($eleve_id)
+	{
+		global $DB;
+		$DB->query(sprintf("DELETE FROM t_evaluationeleveinfo WHERE eleve = %d",$eleve_id));
+	}
+	function deleteWithEvaluationEleve($evaluation_id,$eleve_id)
+	{
+		global $DB;
+		$DB->query(sprintf("DELETE FROM t_evaluationeleveinfo WHERE evaluation = %d AND eleve=%d",$evaluation_id,$eleve_id));
+	}
+	
+	function deleteObjectsWithClasse($classe_id)
+	{
+		global $DB;
+		$DB->query(sprintf("DELETE t_evaluationeleveinfo.* FROM t_evaluationeleveinfo,t_eleve WHERE t_eleve.id = t_evaluationeleveinfo.eleve AND t_eleve.classe = %d", $classe_id));
+	}
+
+	function objectsWithQuery($query,$key=null)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				if ($key)
+					$res[$tmp[$key]] = CEvaluationEleveInfo::objectWithArray($tmp);
+				else $res[] = CEvaluationEleveInfo::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CEvaluationEleveInfo::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objects()
+	{
+// 		return CEvaluationEleve::objectsWithQuery("select * from t_evaluationeleve order by code");
+		return null;
+	}
+	
+	function objectWithArray(&$arr)
+	{
+		$u = new CEvaluationEleveInfo();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CEvaluationEleveInfo::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+
+	function objectsForEvaluation($evaluation_id,$key=null)
+	{
+		return CEvaluationEleveInfo::objectsWithQuery(sprintf("SELECT * from t_evaluationeleveinfo where evaluation=%d",$evaluation_id ),$key);
+	}
+	
+	function objectsForEleve($eleve_id)
+	{
+		return CEvaluationEleveInfo::objectsWithQuery(sprintf("SELECT * from t_evaluationeleveinfo where eleve=%d  order by created desc",$eleve_id));
+	}
+
+
+	function valueForEleveEvaluation($eleve_id,$evaluation_id)
+	{
+		global $DB;
+		return $DB->oneValue(sprintf("SELECT description FROM t_evaluationeleveinfo where eleve=%d AND evaluation=%d",$eleve_id,$evaluation_id));
+	}
+
+	function valuesForEvaluationByEleve($eval_id)
+	{
+		global $DB;
+		$arr = array();
+		if ($rs = $DB->query(sprintf("SELECT eleve,description FROM t_evaluationeleveinfo WHERE evaluation=%d",$eval_id)))
+		{
+			while ($row = $DB->getRow($rs))
+			{
+				$arr[$row[0]] = $row[1];
+			}
+		}
+		return $arr;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("eleve",$arr))
+			$this->eleve = $arr["eleve"];
+		if (array_key_exists("evaluation",$arr))
+			$this->evaluation = $arr["evaluation"];
+
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	function evaluation()
+	{
+		return CEvaluation::objectWithId($this->evaluation);
+	}
+
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("REPLACE INTO t_evaluationeleveinfo (eleve,evaluation,description,creator,created) VALUES (%s,%s,%s,%s,NOW())",
+								$DB->INT($this->eleve),
+								$DB->INT($this->evaluation),
+								$DB->STRING($this->description),
+								$DB->ID($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("REPLACE t_evaluationeleve SET description = %s WHERE eleve = %d AND evaluation=%d",
+								$DB->STRING($this->description),
+								$DB->ID($this->eleve),
+								$DB->ID($this->evaluation));
+			$DB->query($query);
+		}
+	}
+	function eleve()
+	{
+		return CEleve::objectWithId($this->eleve);
+	}
+	function exportWithEleve()
+	{
+		$e = $this->eleve();
+		?>
+				<informationevaluation nom="<?= $e->nom ?>" prenom="<?= $e->prenom ?>" description="<?= urlencode($this->description) ?>" />
+		<?
+	}
+	function print_xml($deep)
+	{
+		$e = $this->eleve();
+		printf("%s<RESULTATINFO nom='%s' prenom='%s' eleve='eleve_%s'  description='%s' />\n",
+						str_repeat("\t",$deep),
+						urlencode($e->nom),
+						urlencode($e->prenom),
+						$e->id,
+						urlencode($this->description));
+	}
+}

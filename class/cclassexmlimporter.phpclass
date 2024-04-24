@@ -1,0 +1,296 @@
+<?
+
+class CClasseXmlImporter
+{
+	var $filename;
+	var $oidmap=null;
+	var $pstack=null;
+	
+	var $classe=null;
+	
+	function importFromFile($filename)
+	{
+		if (is_file($filename))
+		{
+			$xml = new CClasseXmlImporter();
+			$xml->initWithFilename($filename);
+			return $xml->classe;
+		}
+	}
+
+	function importFromData($data)
+	{
+		$xml = new CClasseXmlImporter();
+		$xml->initWithData($data);
+		return $xml->classe;
+	}
+	
+	function CClasseXmlImporter()
+	{
+		$this->oidmap = array();
+		$this->pstack = array();
+	}
+	
+	function initWithFilename($filename)
+	{
+		CDebug::TRACE(0,"CClasseXmlImporter::initWithFilename($filename)");
+		$this->filename= $filename;
+		$parser = xml_parser_create();
+		$file = fopen($this->filename,"rb");
+		if ($file)
+		{
+			xml_set_object($parser, $this);
+			xml_set_element_handler($parser, 'startXML', 'endXML');
+			while (($data = fread($file, 8192)))
+			{
+				if (!xml_parse($parser, $data, feof($file)))
+				{
+					CDebug::trace(0,sprintf('XML error at line %d column %d', 
+										xml_get_current_line_number($parser), 
+										xml_get_current_column_number($parser)));
+				}
+			}
+		} else CDebug::TRACE(0,"*************** CClasseXmlImporter : fichier inconnu " . $this->filename);
+	}
+	function initWithData($data)
+	{
+		CDebug::TRACE(0,"CClasseXmlImporter::initWithData(...)");
+		$parser = xml_parser_create();
+		if ($data)
+		{
+			xml_set_object($parser, $this);
+			xml_set_element_handler($parser, 'startXML', 'endXML');
+			if (!xml_parse($parser, $data,true))
+			{
+				CDebug::trace(0,sprintf('XML error at line %d column %d', 
+									xml_get_current_line_number($parser), 
+									xml_get_current_column_number($parser)));
+			}
+		} else CDebug::TRACE(0,"*************** CClasseXmlImporter : no data ");
+	}
+
+	
+	function lastObject()
+	{
+		if (count($this->pstack) == 0) return null;
+		return end($this->pstack);
+	}
+	function startXML($parser,$name,$attr)
+	{
+		CDebug::trace(0,"startXML($parser,$name,$attr)");
+		switch($name)
+		{
+			case "CLASSE":
+				$c = new CClasse();
+
+				$user = CUser::user();
+				$c->manager = $user->id;
+				if ($et = $user->etablissement()) $c->etablissement = $et->id;
+				$c->intitule = urldecode($attr["INTITULE"]);
+				$c->description = urldecode($attr["DESCRIPTION"]);
+				$c->niveau = urldecode($attr["NIVEAU"]);
+				$c->annee = $attr["ANNEE"];
+				$c->a_color = $attr["A_COLOR"];
+				$c->b_color = $attr["B_COLOR"];
+				$c->c_color = $attr["C_COLOR"];
+				$c->z_color = $attr["Z_COLOR"];
+
+				$c->a_code = $attr["A_CODE"];
+				$c->b_code = $attr["B_CODE"];
+				$c->c_code = $attr["C_CODE"];
+				$c->z_code = $attr["Z_CODE"];
+
+				$c->a_title = urldecode($attr["A_TITLE"]);
+				$c->b_title = urldecode($attr["B_TITLE"]);
+				$c->c_title = urldecode($attr["C_TITLE"]);
+				$c->z_title = urldecode($attr["Z_TITLE"]);
+
+				$c->socle = urldecode($attr["SOCLE"]);
+				$c->create();
+				$this->classe = $c;
+				array_push($this->pstack,$c);
+				break;
+			case "ELEVE":
+				$e = new CEleve();
+				$e->nom = urldecode($attr["NOM"]);
+				$e->prenom = urldecode($attr["PRENOM"]);
+				if ($attr["DATE_NAISSANCE"])
+					$e->date_naissance = CDateUtil::isoDateToUnix($attr["DATE_NAISSANCE"]);
+				if ($attr["FIN_SCOLARITE"])
+					$e->fin_scolarite = CDateUtil::isoDateToUnix($attr["FIN_SCOLARITE"]);
+				$e->genre = $attr["GENRE"];
+				$e->classe = $this->classe->id;
+				$e->create();
+				$this->oidmap[$attr['UID']] = $e;
+				break;
+			case "PERIODE":
+				$p = new CPeriode();
+				$p->intitule = urldecode($attr["INTITULE"]);
+				$p->code = urldecode($attr["CODE"]);
+				$p->classe = $this->classe->id;
+				if ($attr["DEBUT"])
+					$p->debut = CDateUtil::isoDateToUnix($attr["DEBUT"]);
+				if ($attr["FIN"])
+					$p->fin = CDateUtil::isoDateToUnix($attr["FIN"]);
+				$p->create();
+				$this->oidmap[$attr['UID']] = $p;
+				break;
+			case "PROGRESSIONS";
+				$o = new CProgression();
+				array_push($this->pstack,$o);
+				break;
+			case "SECTION":
+				$o = new CProgression();
+				$o->intitule = $attr["NAME"];
+				$o->intitule_officiel = $attr["NAME"];
+				$o->code_socle = $attr["SOCLE"];
+				$o->code_b2i = $attr["B2I"];
+				$o->code_langue = $attr["LANGUE"];
+				$o->code = $attr["CODE"];
+				$o->classe = $this->classe->id;
+				if ($p = $this->lastObject())
+				{
+					$o->parentcp = $p->id;
+				}
+				$o->create();
+				array_push($this->pstack,$o);
+				$this->oidmap[$attr['UID']] = $o;
+				break;
+			case "PROGRAMMATION":
+				$prog = $this->lastObject();
+				$p = $this->oidmap[$attr["PERIODE"]];
+				if ($p && $prog)
+				{
+					CProgressionPeriode::createForProgressionAndPeriode($prog->id,$p->id);
+				} else CDebug::TRACE("unable to create programmation");
+				break;
+			case "EVALUATION":
+				$o = new CEvaluation();
+				$o->classe = $this->classe->id;
+				if ($attr["DATE"]) $o->date_examen = CDateUtil::isoDateToUnix($attr["DATE"]);
+				if ($attr["DUREE"]) $o->duree = CDateUtil::userTimeToMinutes($attr["DUREE"]);
+				if ($attr["INTITULE"]) $o->intitule = urldecode($attr["INTITULE"]);
+				if ($attr["CLASSEUR"]) $o->classeur = urldecode($attr["CLASSEUR"]);
+				$o->update();
+				$this->oidmap[$attr['UID']] = $o;
+				array_push($this->pstack,$o);
+				break;
+			case "ELEMENT":
+				$x = new CElement();
+				$evo = $this->lastObject();
+				$x->evaluation = $evo->id;
+				$x->code_socle = $attr["SOCLE"];
+				$x->mode = $attr["MODE"];
+				if ($attr["PROGRESSION"])
+				{
+					if ($prog =  $this->oidmap[$attr["PROGRESSION"]])
+						$x->progression = $prog->id;
+				}
+				$x->valeur_max = $attr["VALEUR_MAX"];
+				$x->description = urldecode($attr["DESCRIPTION"]);
+				$x->seuil_a = $attr["SEUIL_A"];
+				$x->seuil_b = $attr["SEUIL_B"];
+				$x->order_index = $attr["ORDER_INDEX"];
+				$x->create();
+				array_push($this->pstack,$x);
+				break;
+			case "RESULTAT":
+				$x = new CEvaluationEleve();
+				$elem = $this->lastObject();
+				$eleve =  $this->oidmap[$attr["ELEVE"]];
+				$x->element = $elem->id;
+				$x->eleve = $eleve->id;
+				$x->mode = $attr["MODE"];
+				$x->valeur = $attr["VALEUR"];
+				if ($attr["REFERENCE"])
+					$x->valeur_ref  = $attr["REFERENCE"];
+				if ($attr["VALEUR_REF"])
+					$x->valeur_ref  = $attr["VALEUR_REF"];
+				$x->valeur_max  = $attr["VALEUR_MAX"];
+				$x->description = urldecode($attr["DESCRIPTION"]);
+				$x->create();
+				break;
+			case "RESULTATINFO":
+				$x = new CEvaluationEleveInfo();
+				$eval = $this->lastObject();
+				$eleve =  $this->oidmap[$attr["ELEVE"]];
+				$x->evaluation = $eval->id;
+				$x->eleve = $eleve->id;
+				$x->description = urldecode($attr["DESCRIPTION"]);
+				$x->create();
+				break;
+			case "BILAN_PROGRESSION":
+				$e = $this->oidmap[$attr["ELEVE"]];
+				$p = $this->oidmap[$attr["PERIODE"]];
+				if ($e && $p)
+				{
+					$x = new CBilanProgression();
+					$x->intitule = urldecode($attr["INTITULE"]);
+					$x->eleve = $e->id;
+					$x->periode = $p->id;
+					$x->description = urldecode($attr["DESCRIPTION"]);
+					$x->date_bilan = CDateUtil::isoDateToUnix($attr["DATE"]);
+					$x->create();
+					array_push($this->pstack,$x);
+				} else
+				{
+					CDebug::TRACE(0,"Erreur de lecture BILAN_PROGRESSION");
+				}
+				break;
+			case "ELEMENT_BILAN_PROGRESSION":
+				$bilan = $this->lastObject();
+				$prog =  $this->oidmap[$attr["PROGRESSION"]];
+				$x = new CBilanProgressionElement();
+				$x->eleve = $bilan->eleve;
+				$x->periode = $bilan->periode;
+				$x->progression = $prog->id;
+				$x->commentaire = urldecode($attr["COMMENTAIRE"]);
+				$x->affichage = $attr["AFFICHAGE"];
+				$x->evaluation = $attr["EVALUATION"];
+				$x->create();
+				break;
+			case "BILAN_SOCLE":
+				$e = $this->oidmap[$attr["ELEVE"]];
+				if ($e)
+				{
+					$x = new CBilanSocle();
+					$x->eleve = $e->id;
+					$x->commentaires = urldecode($attr["COMMENTAIRES"]);
+					$x->socle = urldecode($attr["SOCLE"]);
+					$x->date_bilan = CDateUtil::isoDateToUnix($attr["DATE"]);
+					$x->create();
+					array_push($this->pstack,$x);
+				} else
+				{
+					CDebug::TRACE(0,"Erreur de lecture BILAN_PROGRESSION");
+				}
+				break;
+			case "ELEMENT_BILAN_SOCLE":
+				$bilan = $this->lastObject();
+				$x = new CBilanSocleElement();
+				$x->eleve = $bilan->eleve;
+				$x->socle_ref = $attr["CODE_SOCLE"];
+				$x->socle_intitule = urldecode($attr["INTITULE_SOCLE"]);
+				$x->commentaire = urldecode($attr["COMMENTAIRE"]);
+				$x->affichage = $attr["AFFICHAGE"];
+				$x->evaluation = $attr["EVALUATION"];
+				$x->create();
+				break;
+		}
+	}
+	function endXML($parser, $name)
+	{
+		switch($name)
+		{
+			case "CLASSE":
+			case "SECTION":
+			case "EVALUATION":
+			case "BILAN_PROGRESSION":
+			case "ELEMENT":
+			case "PROGRESSIONS";
+			case "BILAN_SOCLE":
+				array_pop($this->pstack);
+				break;
+		}
+	}	
+}

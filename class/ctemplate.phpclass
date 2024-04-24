@@ -1,0 +1,146 @@
+<?
+$CTEMPLATE_OPEN_MODULES = array();
+$CTEMPLATE_MAIN_MENUS = null;
+$CTEMPLATE_MAIN_MENUS_HANDLER = null;
+$CTEMPLATE_LOGIN_MODULE = "login";
+
+class CTemplate {
+//	static $template_name = "default";
+//	static $template_path = "default";
+//	static $open_modules = array();
+	
+//	static $main_menus = null;
+//	static $default_menu = null;
+	
+	function modules()
+	{
+		$res = array();
+		$mod_path = APP_PATH . "/modules";
+		$dh = opendir($mod_path);
+		while (($file = readdir($dh)) !== false) {
+			if ($file[0] != "." && $file[0] != "_") {
+				if (is_dir($mod_path ."/". $file )) 	$res[] = $file;
+				elseif (substr($file,-4) == ".inc")	$res[] = substr($file,0,-4);
+			}
+		}
+		sort($res);
+		return $res;
+	}
+	
+	function module()
+	{
+		return $_GET["module"];
+	}
+	function base_url()
+	{
+		return "?module=" . CTemplate::module();
+	}
+	
+	function top($section)
+	{
+		require_once(APP_PATH . "/template/default/top.inc");
+	}
+	
+	function bottom()
+	{
+			require_once(APP_PATH . "/template/default/bottom.inc");
+	}
+	
+	function set_main_menus($arr)
+	{
+		global $CTEMPLATE_MAIN_MENUS;
+		$CTEMPLATE_MAIN_MENUS = $arr;
+	}
+	function set_main_menu_handler($handler)
+	{
+		global $CTEMPLATE_MAIN_MENUS_HANDLER;
+		$CTEMPLATE_MAIN_MENUS_HANDLER = $handler;
+	}
+	function main_menus()
+	{
+		global $CTEMPLATE_MAIN_MENUS;
+		global $CTEMPLATE_MAIN_MENUS_HANDLER;
+		if ($CTEMPLATE_MAIN_MENUS_HANDLER)
+		{
+			return $CTEMPLATE_MAIN_MENUS_HANDLER();
+		} else return $CTEMPLATE_MAIN_MENUS;
+	}
+
+	function draw_main_menu($selected_module) {
+		if ($m = CTemplate::main_menus())
+			CTemplate::draw_menu($m,$selected_module);	
+	}
+
+	function draw_menu($menu_list,$selected_module) { ?>
+		<div id="menus"><?
+			foreach($menu_list as $module => $name) { 
+				$sel = "";
+				if ($selected_module == $module) $sel = "selected";
+				if ($module[0] == '*')
+				{
+					$mapi = str_replace('*','',$module);
+					$mapi(); 
+				} else
+				{ ?>
+					<div <?= $sel ?> class='<?= "$sel" ?>'><a href="?module=<?= $module ?>" ><?= $name ?></a></div>
+			<? }} ?>
+		</div><?
+	}
+
+	function setLoginModule($mod)
+	{
+		global $CTEMPLATE_LOGIN_MODULE;
+		$CTEMPLATE_LOGIN_MODULE = $mod;
+	}
+	
+	function includeLoginModule()
+	{
+		global $CTEMPLATE_LOGIN_MODULE;
+		CTemplate::includeModule($CTEMPLATE_LOGIN_MODULE);
+	}
+	
+	function includeModule($m="default")
+	{
+		if (is_dir(APP_PATH . "/modules/$m"))
+		{
+			include(APP_PATH . "/modules/$m/$m.inc");
+		}
+		else include(APP_PATH . "/modules/$m.inc");
+	}
+	function includeModuleFile($m,$f)
+	{
+		if (is_dir(APP_PATH . "/modules/$m") && is_file(APP_PATH . "/modules/$m/$f.inc"))
+		{
+			include(APP_PATH . "/modules/$m/$f.inc");
+			return true;
+		}
+		return false;
+	}
+	
+	function isOpen($m)
+	{
+		global $CTEMPLATE_OPEN_MODULES;
+		return in_array($m, $CTEMPLATE_OPEN_MODULES);
+	}
+	function openModule($m)
+	{
+		global $CTEMPLATE_OPEN_MODULES;
+		$CTEMPLATE_OPEN_MODULES[] = $m;
+	}
+	function securizedModules()
+	{
+		global $CTEMPLATE_OPEN_MODULES;
+		$res = array();
+		foreach(CTemplate::modules() as $m) 
+		{
+			if (!in_array($m, $CTEMPLATE_OPEN_MODULES)) $res[] = $m;
+		}
+		return $res;
+	}
+	
+	function isModule($m)
+	{
+		return ((is_dir(APP_PATH . "/modules/$m") && is_file(APP_PATH . "/modules/$m/$m.inc")) || is_file(APP_PATH . "/modules/$m.inc"));
+	}
+}
+

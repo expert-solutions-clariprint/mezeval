@@ -1,0 +1,363 @@
+<?
+/*
+						eXpert soLutions
+					www.expert-solutions.fr
+
+						Projet P.A.P.I.
+
+		Institut Regional du Travail Social Aquitaine
+					Tout droits r&eacute;serv&eacute;s.
+
+nom du fichier : xldatabase.class
+Auteur du fichier : Sylvain Benilan
+Date : 06/07/01
+
+
+*/
+
+$CDATABASE_CURRENT_DB = null;
+$CDATABASE_VERBOSE = null;
+
+class CDatabase
+{
+	
+	function DB()
+	{
+		global $CDATABASE_CURRENT_DB;
+		return $CDATABASE_CURRENT_DB;
+	}
+	
+	function mySql($host,$dbname,$user,$pass)
+	{
+		$db = new CDatabase("mysql",$dbname);
+		$db->user = $user;
+		$db->password = $pass;
+		if ($host) $db->address = $host;
+		global $DB;
+		$DB = & $db;
+		$GLOBALS["DB"]  = &$db;
+		global $CDATABASE_CURRENT_DB;
+		$CDATABASE_CURRENT_DB = & $db;
+		return $db;
+	}
+	
+	var $connexion;
+	var $type;
+	var $user ="";
+	var $password ="";
+	var $address ="localhost";
+	var $name;
+	var $derniereErreur;
+
+	function CDatabase($type,$name)
+	{
+		global $CDATABASE_VERBOSE;
+		CDebug::TRACE($CDATABASE_VERBOSE,"CDatabase($type,$name)");
+		$this->type = $type;
+		$this->name = $name;
+	}
+
+	function __toString() { return "<db>"; }
+
+	function STRING($i)
+	{
+		$this->ensureConnection();
+		return "'" . mysql_real_escape_string($i,$this->connexion) . "'";
+	}
+
+	function FORMAT_INT($i)
+	{
+		if ($i) return "$i";
+		return "0";
+	}
+	function INT($i)
+	{
+		if ($i) return "$i";
+		return "0";
+	}
+	function ID($i)
+	{
+		if ($i) return sprintf("%d",$i);
+		return "null";
+	}
+	
+	function INT_LIST(&$arr)
+	{
+		$res ="";
+		$sep = "";
+		foreach($arr as $i)
+		{
+			$res .= $sep . $i;
+			$sep = ",";
+		}
+		return "(" . $res . ")";
+	}
+
+	function DATE($d)
+	{
+		if ($d)
+		{
+			return strftime("'%Y-%m-%d'",$d);
+		} 
+		return "null";
+	}
+
+	function FORMAT_DATE($d)
+	{
+		switch($this->type)
+		{
+			case "mysql" :
+				return "UNIX_TIMESTAMP(" . $d . ")";
+				break;
+			case "oracle" :
+				break;
+		}
+	}
+	function FORMAT_TIME($d)
+	{
+		switch($this->type)
+		{
+			case "mysql" :
+				if($d) return "'$d'"; else "null";
+				break;
+			case "oracle" :
+				break;
+		}
+	}
+		
+	function TIMESTAMP($d) { return $this->FORMAT_TIMESTAMP($d); }
+	function FORMAT_TIMESTAMP($d)
+	{
+		switch($this->type)
+		{
+			case "mysql" :
+				if($d) return "FROM_UNIXTIME(" . $d . ")";
+				else return  "null";
+				break;
+			case "oracle" :
+				break;
+		}
+	}
+
+	function database_name()
+	{
+		return $this->oneValue("SELECT database()");
+	}
+	
+	function FORMAT_PASSWORD($d)
+	{
+		switch($this->type)
+		{
+			case "mysql" :
+				return "PASSWORD(" . $d . ")";
+				break;
+			case "oracle" :
+				break;
+		}
+	}
+
+	function BLOB($b)
+	{
+		if ($b)
+			return "'". mysql_real_escape_string(gzcompress($b),$this->connexion) ."'";
+		else "null";
+	}
+	function UNBLOB($b)
+	{
+		if ($b)
+		{
+			return gzuncompress($b);
+		}
+		return null;
+	}
+	function isEqual($field,$strValue)
+	{
+		switch($this->type)
+		{
+			case "mysql" :
+					if ($strValue) {$strValue =  $field . "='" . str_replace("'","\'",$strValue) . "'";}
+				else $strValue = $field . " is null";
+					return $strValue;
+					break;
+			case "oracle" :
+				break;
+		}
+	}
+
+	function ensureConnection()
+	{
+		if (!$this->connexion)
+		{
+			if ($this->connect())
+				return true;
+			else 
+			{
+				trigger_error("Unable to connect to database server / CDatabase",E_USER_ERROR);
+				return false;
+			}
+		}
+		return true;
+	}
+	function connect()
+	{
+		global $CDATABASE_VERBOSE;
+		CDebug::TRACE($CDATABASE_VERBOSE,"CDatabase::connect()");
+		if ($_SESSION["CDATABASE_NAME"]) $this->name = $_SESSION["CDATABASE_NAME"];
+		switch($this->type)
+		{
+			case "mysql" :
+				CDebug::TRACE($CDATABASE_VERBOSE, "temtative de connexion ˆ ". $this->user . ":". $this->password . "@" .$this->address . " / " . $this->name);
+				$this->connexion = mysql_connect($this->address,$this->user,$this->password);
+				break;
+			case "oracle" : 
+				break;
+		}
+		if(!$this->connexion) 
+		{
+			CDebug::TRACE($CDATABASE_VERBOSE, "Erreur de connexion");
+			return false;
+		}
+		return true;
+	}
+	function getmicrotime()
+	{
+		list($usec, $sec) = explode(" ",microtime());
+		return ((float)$usec + (float)$sec);
+	}
+
+	function & query($query)
+	{
+		if (!isset($this)) 
+		{
+			global $CDATABASE_CURRENT_DB;
+			return $CDATABASE_CURRENT_DB->query($query);
+		}
+		$this->ensureConnection();
+		
+		$t1 = CDatabase::getmicrotime();
+		$rs = null;
+		global $CDATABASE_VERBOSE;
+		CDebug::TRACE($CDATABASE_VERBOSE , "CDatabase::query($query)");
+		switch($this->type)
+		{
+			case "mysql" :
+					$rs = mysql_db_query($this->name,$query,$this->connexion);
+				break;
+			case "oracle" :
+				break;
+		}
+		$t2 = CDatabase::getmicrotime();
+		CDebug::TRACE($CDATABASE_VERBOSE, "query --------- > " . ($t2 - $t1));
+		if($rs) return $rs;
+
+		switch($this->type)
+		{
+			case "mysql" :
+				$this->derniereErreur = mysql_error($this->connexion);
+				break;
+			case "oracle" :
+				break;
+		}
+
+		if(DEBUG)
+		{
+			CDebug::TRACE($CDATABASE_VERBOSE, "query failed : $query");
+			CDebug::TRACE($CDATABASE_VERBOSE, $this->derniereErreur);
+		}
+		return null;
+	}
+
+
+	function & getRow(& $rs)
+	{
+		global $CDATABASE_VERBOSE;
+		CDebug::TRACE($CDATABASE_VERBOSE + 1,"CDatabase::getRow(& $rs)");
+		switch($this->type)
+		{
+			case "mysql" :
+					return mysql_fetch_array($rs);
+				break;
+			case "oracle" :
+				break;
+		}
+	}
+
+	function getNumRows(& $rs)
+	{
+		global $CDATABASE_VERBOSE;
+		CDebug::TRACE($CDATABASE_VERBOSE,"CDatabase::getNumRows(& $rs)");
+		switch($this->type)
+		{
+			case "mysql" :
+				return mysql_num_rows($rs);
+				break;
+			case "oracle" :
+				break;
+		}
+	}
+
+	function getLastError()
+	{
+		global $CDATABASE_VERBOSE;
+		CDebug::TRACE($CDATABASE_VERBOSE,"CDatabase::getLastError()");
+		return $derniereErreur;
+	}
+
+	function getLastID()
+	{		
+		if (!isset($this)) {
+			global $CDATABASE_CURRENT_DB;
+			return $CDATABASE_CURRENT_DB->getLastID();
+		}
+		$this->ensureConnection();
+		global $CDATABASE_VERBOSE;
+		CDebug::TRACE($CDATABASE_VERBOSE,"CDatabase::getLastID()");
+		switch($this->type)
+		{
+			case "mysql" :
+				return mysql_insert_id($this->connexion);
+				break;
+			case "oracle" :
+				break;
+		}
+	}
+
+	function close()
+	{
+		global $CDATABASE_VERBOSE;
+		CDebug::TRACE($CDATABASE_VERBOSE,"CDatabase::close()");
+		$this->ensureConnection();
+		switch($this->type)
+		{
+			case "mysql" :
+				mysql_close($this->connexion);
+				break;
+			case "oracle" :
+				break;
+		}
+	}
+
+	function stringsFromQuery($query)
+	{
+		$res = array();
+		$rs = $this->query($query);
+		if ($rs)
+		{
+			while ($tmp = $this->getRow($rs)) {
+				$res[] = $tmp[0];
+			}
+		}
+		return $res;
+	}
+	
+	function oneValue($query) {
+		$rs = $this->query($query);
+		if ($rs)
+		{
+			while ($tmp = $this->getRow($rs)) {
+				$res = $tmp[0];
+			}
+		}
+		return $res;
+	}
+}

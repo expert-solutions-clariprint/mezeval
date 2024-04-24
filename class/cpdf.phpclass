@@ -1,0 +1,240 @@
+<?
+
+if (!require_once(APP_PATH . '/libs/tcpdf/config/lang/eng.php')) die("TCPDF library needed");
+if (!require_once(APP_PATH . '/libs/tcpdf/tcpdf.php')) die("TCPDF library needed");
+
+class CPdf extends TCPDF
+{
+	var $table_vertical_border_width = 1;
+	var $table_horizontal_border_width = 1;
+	
+	var $title = "Mezeval";
+	var $header_left;
+	var $header_right;
+	var $afficheHeader = true;
+	
+	function init()
+	{
+		CDebug::TRACE(0,"CPdf::init()");
+		// set header and footer fonts
+		$this->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+		$this->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+		//set margins
+		$this->SetMargins(PDF_MARGIN_LEFT, 20, PDF_MARGIN_RIGHT);
+		$this->SetHeaderMargin(6);
+		$this->SetFooterMargin(PDF_MARGIN_FOOTER);
+		//set auto page breaks
+		$this->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+		//set image scale factor
+		$this->setImageScale(PDF_IMAGE_SCALE_RATIO);
+		//set some language-dependent strings
+		$this->setLanguageArray($l);
+		//initialize document
+		$this->AliasNbPages();
+		// set font
+		$this->AddFont("dejavusans", "BI", 11);
+		$this->header_left= strftime("%d/%m/%Y");
+		$this->header_right = CUser::user()->etablissement;
+	}
+
+	function getPrintableWidth()
+	{
+		return $this->getPageWidth - $this->lMargin - $this->rMargin;
+	}
+	
+	public function Header() {
+		if ($this->afficheHeader)
+		{
+			$ormargins = $this->getOriginalMargins();
+			$headerfont = $this->getHeaderFont();
+		
+			$this->SetFont($headerfont[0], 'B', $headerfont[2] + 1);
+			$this->SetTextColor(0, 0, 0);
+			// left		
+			$header_x = $ormargins['left'];
+			$this->SetX($header_x);
+			$this->Cell(0, $cell_height,$this->header_right, 0, 0, '', 0, '', 0);
+			$this->Cell(0, $cell_height,$this->header_left, 0, 1, 'R', 0, '', 0);
+
+			$this->SetX($header_x);
+			$this->Cell(0, $cell_height,$this->titre, 0, 1, '', 0, '', 0);
+		
+			$this->SetLineStyle(array('width' => 0.85 / $this->getScaleFactor(), 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 0, 0)));
+			$this->SetX($ormargins['left']);
+		}
+	}	
+	
+
+	function SetStringFillColor($str)
+	{
+		$r = hexdec(substr($str,-6,2));
+		$v = hexdec(substr($str,-4,2));
+		$b = hexdec(substr($str,-2,2));
+//		CDebug::TRACE(0,"color : $str -> ($r,$v,$b)");
+		return $this->SetFillColor($r, $v, $b,true);
+	}
+	
+	function SetStringTextColor($str)
+	{
+		$r = hexdec(substr($str,-6,2));
+		$v = hexdec(substr($str,-4,2));
+		$b = hexdec(substr($str,-2,2));
+		CDebug::TRACE(0,"color : $str -> ($r,$v,$b)");
+		return $this->SetTextColor($r, $v, $b);
+	}
+
+	function setTextBlack()
+	{
+		$this->SetTextColor(0,0,0);
+	}
+
+	
+	var $table_row_cols_x;
+	var $table_row_top;
+
+	function tableStartRow($h=0)
+	{
+//		CDebug::TRACE(0,"------------------ tableStartRow() ------------------");
+		$this->table_row_cols_x = array($this->GetX());
+		$this->table_row_top = $this->GetY();
+		$this->table_row_bottom = 0;
+	}
+	
+	var $table_row_bottom = 0;
+	var $table_cell_maxh = 0;
+	function tableCell($width,$txt,$align="L",$end=0,$border=0,$padding_left=0,$fill=0)
+	{
+		if ($padding_left)
+		{
+			$this->setX($this->GetX() + $padding_left);
+			$width =  $width - $padding_left;
+		}	
+		
+		$this->MultiCell($width, 0, $txt, 0,$align,$fill,$end);
+		$this->table_cell_maxh = max($this->table_cell_maxh,$this->lasth);
+		$this->table_row_cols_x[] = $this->GetX();
+//		CDebug::TRACE(0,sprintf("X =  %s Y = %s maxh=%s",$this->GetX(),$this->GetY(),$this->lasth ));
+		$this->table_row_bottom = min($this->table_row_bottom,$this->GetY());
+		if ($end) $this->tableRowEnd($border);
+	}
+	
+	function _beginpage($orientation = '',$format='')
+	{
+//		CDebug::TRACE(0,"_beginpage **********");
+		parent::_beginpage($orientation,$format);
+		$this->table_row_bottom = null;
+		$this->table_cell_maxh = 0;
+		$this->table_row_cols_x = null;
+		$this->table_row_top = $this->getY();
+	}
+
+	
+	function tableRowEnd($bottom_width=0,$vertical_border=0.5,$top_border=0)
+	{
+		$last = $this->GetX();
+		$bottom =  $this->table_row_top + $this->table_cell_maxh;
+		$top = $this->table_row_top;
+		if ($vertical_border)
+		{
+			$this->SetLineWidth($vertical_border);
+			foreach($this->table_row_cols_x as $x)
+			{
+				$this->Line($x,$top,$x,$bottom);
+			}
+		}
+		if ($bottom_width)
+		{
+			$this->SetLineWidth($bottom_width);
+			$this->Line($this->table_row_cols_x[0],$bottom,$last,$bottom);
+		}
+		if ($top_border)
+		{
+			$this->SetLineWidth($top_border);
+			$this->Line($this->table_row_cols_x[0],$top,$last,$top);
+		}
+		$this->SetY($this->table_row_top + $this->table_cell_maxh);
+		$this->table_cell_maxh = 0;
+	}
+	function verticalGraph($width,$height,$vals,$colors,$colon_names = null)
+	{
+		$top = $this->GetY();
+		$pw = $this->getPageWidth();
+		$this->SetX(($pw - $width) / 2);
+		$this->verticalGraphBackground($top,$width,$height);
+		$i = 0;
+		for($i = 0; $i < count($vals);$i++)
+		{
+			$this->verticalGraphBar($top,$width,$height,$i,$vals,$colors);
+		}
+		$this->verticalGraphAxes($top,$width,$height,$colon_names);
+		$this->SetY($this->GetY() + $height);
+	}
+
+	function verticalGraphBackground($top,$width,$height)
+	{
+		$left = $this->GetX();
+		$this->Line($left, $top + $height / 4, $left + $width, $top + $height / 4,array('width' => 0.1));
+		$this->Line($left, $top + $height / 2 , $left + $width, $top + $height / 2,array('width' => 0.1));
+		$this->Line($left, $top + 3 * $height / 4, $left + $width, $top + 3 * $height / 4,array('width' => 0.1));
+	}
+	
+	function verticalGraphAxes($top,$width,$height,$colon_names = null)
+	{
+		$left = $this->GetX();
+		$this->Line($left,$top, $left, $top + $height,array('width' => 0.1));
+		$this->Line($left, $top + $height, $left + $width, $top + $height,array('width' => 0.1));
+		if ($colon_names)
+		{
+			$xleft = $left;
+			$top = $top + $height + 1.25 * $this->getFontSize();
+			$colwidth  = $width / count($colon_names);
+			foreach($colon_names as $name)
+			{
+//				$this->Text($xleft + ($colwidth - $txt_w) / 2, $top, $name);
+				$this->MultiCell($colwidth, 0, $name, 0,'C', 0, 0, $xleft, $top ); //, [boolean $reseth = true], [int $stretch = 0], [boolean $ishtml = false], [boolean $autopadding = true], [float $maxh = 0])
+				$xleft +=  $colwidth;
+
+			}
+		}
+		
+	}
+	function predictEOP($txt,$width)
+	{
+		$x = $this->GetStringWidth($txt);
+		$n = 1 + ($x / $width);
+		$h = 1.25 * ($n * $this->getFontSize());
+		$h = $n * $this->FontSize * $this->cell_height_ratio + 10;
+		$b = $this->checkPageBreak($h);
+		return $b;
+	}
+	
+	function verticalGraphBar($top,$width,$height,$index,$vals,$colors)
+	{
+		$sep= 2;
+		$val = $vals[$index];
+		$tot = array_sum($vals);
+		$colwidth  = $width / count($vals);
+		$bar_width = $colwidth - 2 * $sep;
+		$bar_left = $this->GetX() + $colwidth * $index + $sep;
+		if ($tot)
+		{
+		$bar_top = $top + $height *  (1 - $val / $tot);
+		$bar_h = $height *  $val / $tot;
+		
+		$this->SetStringFillColor($colors[$index]);
+		$borders = array("all" => array("width" => 0.05, "color" => array(0,0,0)));
+		if ($bar_h > 0)
+			$this->Rect($bar_left, $bar_top,$bar_width, $bar_h, 'FD',$borders);
+		$percent = 100 * $val / $tot;
+		$txt = sprintf("%.1f %%",$percent);
+		$txt_w = $this->GetStringWidth($txt);
+		
+		$this->Text($bar_left + ($bar_width - $txt_w) / 2, $bar_top - 0.5, $txt);
+		}
+	}
+	function printableWidth()
+	{
+		return $this->getPageWidth() - $this->rMargin - $this->lMargin;
+	}
+
+}

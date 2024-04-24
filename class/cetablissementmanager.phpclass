@@ -1,0 +1,210 @@
+<?
+/*
+CREATE TABLE `t_etablissement` (
+	id INT NOT NULL AUTO_INCREMENT,
+
+	nom varchar(100),
+	uai varchar(100),
+	siret varchar(100),
+
+	contact_nom varchar(100),
+	contact_adresse_1 varchar(100),
+	contact_adresse_2 varchar(100),
+	contact_codepostal varchar(6),
+	contact_ville varchar(100),
+	contact_telephone varchar(20),
+	contact_fax varchar(20),
+	contact_email varchar(200),
+
+	facturation_nom varchar(100),
+	facturation_adresse_1 varchar(100),
+	facturation_adresse_2 varchar(100),
+	facturation_codepostal varchar(6),
+	facturation_ville varchar(100),
+
+	created datetime,
+	creator int,
+	unique (uai),
+	PRIMARY KEY (`id`));
+*/		
+
+class CEtablissementManager
+{
+	function getLoginPassword()
+	{
+	}
+	
+	/* class methods */
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CEtablissement::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CEtablissement::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($arr = CEtablissement::objectsWithQuery("SELECT * FROM t_etablissement WHERE id=$id"))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_topic WHERE id=$id");
+	}
+	
+	function objects()
+	{
+		return CEtablissement::objectsWithQuery("select * from t_etablissement order by nom desc");
+	}
+	
+	function objectsForCurrentUser($mode)
+	{
+		return CPTicket::etablissementsForCurrentUser($mode);
+	}
+
+	function objectWithArray(&$arr)
+	{
+		$u = new CEtablissement();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CEtablissement::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("nom",$arr))
+			$this->nom = stripcslashes($arr["nom"]);
+
+		if (array_key_exists("uai",$arr))
+			$this->uai = stripcslashes($arr["uai"]);
+
+		if (array_key_exists("siret",$arr))
+			$this->siret = stripcslashes($arr["siret"]);
+
+		if (array_key_exists("contact_nom",$arr))
+			$this->contact_nom = stripcslashes($arr["contact_nom"]);
+		if (array_key_exists("contact_adresse_1",$arr))
+			$this->contact_adresse_1 = stripcslashes($arr["contact_adresse_1"]);
+		if (array_key_exists("contact_adresse_2",$arr))
+			$this->contact_adresse_2 = stripcslashes($arr["contact_adresse_2"]);
+		if (array_key_exists("contact_codepostal",$arr))
+			$this->contact_codepostal = stripcslashes($arr["contact_codepostal"]);
+		if (array_key_exists("contact_codepostal",$arr))
+			$this->contact_codepostal = stripcslashes($arr["contact_codepostal"]);
+		if (array_key_exists("contact_ville",$arr))
+			$this->contact_ville = stripcslashes($arr["contact_ville"]);
+		if (array_key_exists("contact_telephone",$arr))
+			$this->contact_telephone = stripcslashes($arr["contact_telephone"]);
+		if (array_key_exists("contact_fax",$arr))
+			$this->contact_fax = stripcslashes($arr["contact_fax"]);
+		if (array_key_exists("contact_email",$arr))
+			$this->contact_email = stripcslashes($arr["contact_email"]);
+
+		if (array_key_exists("facturation_nom",$arr))
+			$this->facturation_nom = stripcslashes($arr["facturation_nom"]);
+		if (array_key_exists("facturation_adresse_1",$arr))
+			$this->facturation_adresse_1 = stripcslashes($arr["facturation_adresse_1"]);
+		if (array_key_exists("facturation_adresse_2",$arr))
+			$this->facturation_adresse_2 = stripcslashes($arr["facturation_adresse_2"]);
+		if (array_key_exists("facturation_codepostal",$arr))
+			$this->facturation_codepostal = stripcslashes($arr["facturation_codepostal"]);
+		if (array_key_exists("facturation_codepostal",$arr))
+			$this->facturation_codepostal = stripcslashes($arr["facturation_codepostal"]);
+		if (array_key_exists("facturation_ville",$arr))
+			$this->facturation_ville = stripcslashes($arr["facturation_ville"]);
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("INSERT INTO t_etablissement (
+							nom,uai,siret,
+							contact_nom,contact_adresse_1,contact_adresse_2,contact_codepostal,contact_ville,
+							contact_telephone,contact_fax,contact_email,
+							facturation_nom,facturation_adresse_1,facturation_adresse_2,facturation_codepostal,facturation_ville,
+							creator,created) VALUES (
+							%s,%s,%s,
+							%s,%s,%s,%s,%s,
+							%s,%s,%s,
+							%s,%s,%s,%s,%s,
+							%s,NOW())",
+							$DB->STRING($this->nom),$DB->STRING($this->uai),$DB->STRING($this->siret),
+							$DB->STRING($this->contact_nom),$DB->STRING($this->contact_adresse_1),$DB->STRING($this->contact_adresse_2),$DB->STRING($this->contact_codepostal),$DB->STRING($this->contact_ville),
+							$DB->STRING($this->contact_telephone),$DB->STRING($this->contact_fax),$DB->STRING($this->contact_email),
+							$DB->STRING($this->facturation_nom),$DB->STRING($this->facturation_adresse_1),$DB->STRING($this->facturation_adresse_2),$DB->STRING($this->facturation_codepostal),$DB->STRING($this->facturation_ville),
+							$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}			
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_etablissement SET
+							nom=%s,uai=%s,siret,
+							contact_nom=%s,contact_adresse_1=%s,contact_adresse_2=%s,contact_codepostal=%s,contact_ville=%s,
+							contact_telephone=%s,contact_fax=%s,contact_email=%s,
+							facturation_nom=%s,facturation_adresse_1=%s,facturation_adresse_2=%s,facturation_codepostal=%s,facturation_ville=%s WHERE id = %s",
+							$DB->STRING($this->nom),$DB->STRING($this->uai),$DB->STRING($this->siret),
+							$DB->STRING($this->contact_nom),$DB->STRING($this->contact_adresse_1),$DB->STRING($this->contact_adresse_2),$DB->STRING($this->contact_codepostal),$DB->STRING($this->contact_ville),
+							$DB->STRING($this->contact_telephone),$DB->STRING($this->contact_fax),$DB->STRING($this->contact_email),
+							$DB->STRING($this->facturation_nom),$DB->STRING($this->facturation_adresse_1),$DB->STRING($this->facturation_adresse_2),$DB->STRING($this->facturation_codepostal),$DB->STRING($this->facturation_ville),
+							$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+	function classes()
+	{
+		return CClasse::objectsForEtablissement($this->id);
+	}
+}

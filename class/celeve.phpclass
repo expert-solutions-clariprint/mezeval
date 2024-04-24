@@ -1,0 +1,253 @@
+<?
+/*
+CREATE TABLE `t_eleve` (
+  `id` int(11) NOT NULL auto_increment,
+  `nom` varchar(200) default NULL,
+  `prenom` varchar(200) default NULL,
+  `date_naissance` date default NULL,
+  `genre` int(11) default NULL,
+  `contact` text,
+  `classe` int(11) default NULL,
+  `created` datetime default NULL,
+  `creator` int(11) default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `classe` (`classe`),
+  CONSTRAINT fk_t_eleve_classe FOREIGN KEY (`classe`) REFERENCES `t_classe` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+*/
+
+class CEleve
+{
+	var $id;
+	var $nom;
+	var $prenom;
+	var $date_naissance;
+	var $fin_scolarite;
+	var $genre;
+	var $contact;
+	var $classe;
+	var $created;
+	var $creator;
+	
+	/* class methods */
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CEleve::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CEleve::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithIdAndClasse($e_id,$classe_id)
+	{
+		if ($arr = CEleve::objectsWithQuery(sprintf("SELECT * FROM t_eleve WHERE id=%d AND classe=%d",$e_id,$classe_id)))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($arr = CEleve::objectsWithQuery("SELECT * FROM t_eleve WHERE id=$id"))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_eleve WHERE id=$id");
+	}
+	
+	function deleteObjectsWithClasse($classe_id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_eleve WHERE classe=$classe_id");
+	}
+	
+	function objects()
+	{
+		return CEleve::objectsWithQuery("select * from t_eleve order by nom,prenom desc");
+	}
+
+	function objectsForClasse($classe_id,$at_date=null)
+	{
+		global $DB;
+		if ($at_date)
+			return CEleve::objectsWithQuery(sprintf("select * from t_eleve where classe='$classe_id' and (fin_scolarisation < %s OR fin_scolarisation  is null) order by nom,prenom desc",$DB->DATE($at_date)));
+		else 
+			return CEleve::objectsWithQuery("select * from t_eleve where classe='$classe_id' order by nom,prenom desc");
+	}
+
+	function objectWithArray(&$arr)
+	{
+		$u = new CEleve();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CEleve::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("nom",$arr))
+			$this->nom = stripcslashes($arr["nom"]);
+		if (array_key_exists("prenom",$arr))
+			$this->prenom = stripcslashes($arr["prenom"]);
+		if (array_key_exists("date_naissance",$arr))
+			$this->date_naissance = strtotime($arr["date_naissance"]);
+		if (array_key_exists("classe",$arr))
+			$this->classe = $arr["classe"];
+		if (array_key_exists("contact",$arr))
+			$this->contact = stripcslashes($arr["contact"]);
+		
+		if (array_key_exists("fin_scolarite",$arr))
+			$this->fin_scolarite = strtotime($arr["fin_scolarite"]);
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	function date_naissance()
+	{
+		if ($this->date_naissance) return strftime("%d/%m/%Y",$this->date_naissance);
+		return "";
+	}
+	
+	function fin_scolarite()
+	{
+		if ($this->fin_scolarite) return strftime("%d/%m/%Y",$this->fin_scolarite);
+		return "";
+	}
+	
+	
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("INSERT INTO t_eleve (nom,prenom,date_naissance,genre,contact,classe,creator,created) VALUES (%s,%s,%s,%s,%s,%d,%d,NOW())",
+								$DB->STRING($this->nom),
+								$DB->STRING($this->prenom),
+								$DB->DATE($this->date_naissance),
+								$DB->INT($this->genre),
+								$DB->STRING($this->contact),
+								$DB->INT($this->classe),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}
+			
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_eleve SET nom = %s,prenom = %s,date_naissance = %s,fin_scolarite = %s, genre = %d,contact = %s WHERE id = %s",
+								$DB->STRING($this->nom),
+								$DB->STRING($this->prenom),
+								$DB->DATE($this->date_naissance),
+								$DB->DATE($this->fin_scolarite),
+								$DB->INT($this->genre),
+								$DB->STRING($this->contact),
+								$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+	
+	function import()
+	{
+		global $DB;
+		$i = $DB->oneValue("SELECT * FROM t_eleve WHERE classe=%s AND nom = %s AND prenom = %s");
+		if ($i) $this->id = $i;
+		$this->update();
+	}
+	function evaluations()
+	{
+		return objectsForEleve($this->id);
+	}
+	function info()
+	{
+		return $this->nom . " " . $this->prenom;
+	}
+	function classe()
+	{
+		return CClasse::objectWithId($this->classe);
+	}
+	function age($ref=null)
+	{
+		if ($this->date_naissance > 0)
+		{
+			if (!$ref) $ref = strtotime("now");
+			$a = date("Y",$ref) -  date("Y",$this->date_naissance);
+			$m = date("m",$ref) -  date("m",$this->date_naissance);
+			if ($m < 0)
+			{
+				$m += 12;
+				$a --;
+			}
+			if ($m > 0)
+				return sprintf("%s ans %s mois",$a,$m) ;
+			else return sprintf("%s ans",$a) ;
+		}
+		return "";
+	}
+	
+	var $xml_oid=null;
+	function print_xml($deep=0)
+	{
+		printf("%s<ELEVE nom='%s' prenom='%s' date_naissance='%s' genre='%s' fin_scolarite='%s' uid='eleve_%s' />\n",
+				str_repeat("\t",$deep),
+				urlencode($this->nom),
+				urlencode($this->prenom),
+				CDateUtil::isoDate($this->date_naissance),
+				$this->genre,
+				CDateUtil::isoDate($this->fin_scolarite),
+				$this->id);
+	}
+	
+	function del()
+	{
+		CEvaluationEleve::deleteWithEleve($this->id);
+		self::deleteObjectWithId($this->id);
+	}
+}

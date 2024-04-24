@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<PERIODES>
+	<PERIODE code='P1' intitule='Période 1' uid='P1' debut='20100902' fin='20101023'/>
+	<PERIODE code='P2' intitule='Période 2' uid='P2' debut='20101104' fin='20101218'/>
+	<PERIODE code='P3' intitule='Période 3' uid='P3' debut='20110103' fin='20110212'/>
+	<PERIODE code='P4' intitule='Période 4' uid='P4' debut='20110228' fin='20110409'/>
+	<PERIODE code='P5' intitule='Période 5' uid='P5' debut='20110426' fin='20110702'/>
+</PERIODES>

@@ -1,0 +1,14 @@
+
+# php_value always_populate_raw_post_data 1
+
+# AddOutputFilter DEFLATE js css
+# Insert filter
+SetOutputFilter DEFLATE
+BrowserMatch ^Mozilla/4 gzip-only-text/html
+BrowserMatch ^Mozilla/4.0[678] no-gzip
+BrowserMatch bMSI[E] !no-gzip !gzip-only-text/html
+# Don't compress images
+SetEnvIfNoCase Request_URI .(?:gif|jpe?g|png)$ no-gzip dont-vary
+SetEnvIfNoCase Request_URI (graph_abc.php)$ no-gzip dont-vary
+# Make sure proxies don't deliver the wrong content
+Header append Vary User-Agent env=!dont-vary

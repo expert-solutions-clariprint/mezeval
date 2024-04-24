@@ -1,0 +1,633 @@
+<? 
+/*
+CREATE TABLE `t_users` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`nom` TEXT,
+	`email` TEXT NOT NULL,
+	`pass` VARCHAR(32),
+	`locked` INT DEFAULT 0,
+	`unlock_key` VARCHAR(32),
+	`created_date` DATETIME,
+	`expire` DATETIME,
+	`administrator` INT DEFAULT 0,
+	update_key VARCHAR(32),
+	addresse TEXT,
+	telephone VARCHAR(20),
+	mobile VARCHAR(20),
+	fax VARCHAR(20),
+	PRIMARY KEY (`id`)
+);
+*/
+
+class CUser 
+{
+	var $id;
+	var $nom;
+	var $etablissement;
+	var $email;
+	var $login;
+	var $pass;
+	var $locked;
+	var $unlock_key;
+	var $created_date;
+	var $expire;
+	var $administrator;
+	var $addresse;
+	var $telephone;
+	var $mobile;
+	var $fax;
+	var $manager;
+	var $contrat;
+	
+	var $rattachement;
+
+//	static $current_user;
+
+	/* class methods */
+	function catchevents()
+	{
+		if ($_POST["logout"] || $_GET["logout"]) {
+			$_SESSION=array();
+			session_destroy();
+			CDebug::TRACE(0,"*************** LOGOUT *************** ");
+			CUser::logout(); }
+		if ($_POST["login"]) {
+		}
+	}
+
+	function checkAvaibilityOfEmailAndAdmin($email)
+	{
+		global $DB;
+		return ($DB->oneValue("select count(id) from t_users where email = '$email' and administrator=1") == 0);
+	}
+
+	function objectWithUnlockKey($key)
+	{
+		$o = CUser::allObjectsFromQuery("select * from t_users where unlock_key='$key'");
+		if (count($o) == 1) return $o[0];
+		return null;
+	}
+
+	function objectWithContrat($contrat_id)
+	{
+		return CUser::allObjectsFromQuery("select * from t_users where contrat=$contrat_id and locked=0 order by nom,login ");
+	}
+
+	function unlockedObjectForManager($manager_id)
+	{
+		return CUser::allObjectsFromQuery("select * from t_users where manager=$manager_id and locked=0 order by contrat,nom,login ");
+		
+	}
+	function objectWhithEmailAndPassword($email,$password)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query("select * from t_users where email = '$email' and pass = MD5('$password')");
+		if ($r)
+		{
+			if ($tmp = $DB->getRow($r))
+			{
+				$u = new CUser();
+				$u->initWithArray($tmp);
+				return $u;
+			}
+		}
+		return null;
+	}
+	
+	function objectWhithLoginAndPassword($login,$password)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query("select * from t_users where login = '$login' and pass = MD5('$password')");
+		if ($r)
+		{
+			if ($tmp = $DB->getRow($r))
+			{
+				$u = new CUser();
+				$u->initWithArray($tmp);
+				return $u;
+			}
+		}
+		return null;
+	}
+	
+	function administratorWithEmail($email)
+	{
+		$o = CUser::allObjectsFromQuery("SELECT * FROM t_users WHERE email='$email' AND administrator=1");
+		if (count($o) == 1) return $o[0];
+		return null;
+	}
+	
+	function objectsWithEmail($email)
+	{
+		return  CUser::allObjectsFromQuery("SELECT * FROM t_users WHERE email='$email' AND administrator=1");
+	}
+	
+	function allObjectsFromQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CUser::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	function query($q) { return CUser::allObjectsFromQuery($q); }
+	
+	function objects()
+	{
+		return CUser::allObjectsFromQuery("select * from t_users order by nom");
+	}
+	
+	function removeObjectWithId($id)
+	{
+	
+	}
+	function objectWithId($id)
+	{
+		$arr = CUser::allObjectsFromQuery("select * from t_users WHERE id = $id");
+		if (count($arr) == 1) return $arr[0];
+		return null;
+	}
+	
+	function is_logged()
+	{ 
+		if ($_SESSION["CURRENT_CUSER"] != null) { CDebug::TRACE(0,"CUser::is_logged() => true"); return true;}
+		CDebug::TRACE(0,"CUser::is_logged() => false");
+		return false;
+	}
+	
+	function setAsCurrentUser($u)
+	{
+		$_SESSION["CURRENT_CUSER"] = $u;
+	}
+	
+	function user()
+	{
+		return $_SESSION["CURRENT_CUSER"];
+	}
+	function getCurrentUser()
+	{
+		return $_SESSION["CURRENT_CUSER"];
+	}
+	
+	function login($email,$pass)
+	{
+		if ($u = CUser::objectWhithEmailAndPassword($email,$pass))
+		{
+			$_SESSION = array();
+			$_SESSION["CURRENT_CUSER"] = $u;
+			return $u;
+		}
+		return false;
+	}
+	function loginWithLogin($login,$pass)
+	{
+		if ($u = CUser::objectWhithLoginAndPassword($login,$pass))
+		{
+			$_SESSION = array();
+			$_SESSION["CURRENT_CUSER"] = $u;
+			return $u;
+		}
+		return false;
+	}
+	
+	function objectWithArray(&$arr)
+	{
+		$u = new CUser();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CUser::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("nom",$arr))
+			$this->nom = stripcslashes($arr["nom"]);
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+		if (array_key_exists("login",$arr))
+			$this->login = $arr["login"];
+		if (array_key_exists("email",$arr))
+			$this->email = $arr["email"];
+		if (array_key_exists("pass",$arr))
+			$this->pass = $arr["pass"];
+		if (array_key_exists("locked",$arr))
+			$this->locked = $arr["locked"];
+		if (array_key_exists("administrator",$arr))
+			$this->administrator = $arr["administrator"];
+		if (array_key_exists("created_date",$arr))
+			$this->created_date = strtotime($arr["created_date"]);
+		if (array_key_exists("telephone",$arr))
+			$this->telephone = $arr["telephone"];
+		if (array_key_exists("addresse",$arr))
+			$this->addresse = $arr["addresse"];
+		if (array_key_exists("mobile",$arr))
+			$this->mobile = $arr["mobile"];
+		if (array_key_exists("fax",$arr))
+			$this->fax = $arr["fax"];
+		if (array_key_exists("manager",$arr))
+			$this->manager = $arr["manager"];
+		if (array_key_exists("contrat",$arr))
+			$this->contrat = $arr["contrat"];
+		if (array_key_exists("expire",$arr))
+			$this->expire = strtotime($arr["expire"]);
+
+		if (array_key_exists("rattachement",$arr))
+			$this->rattachement = $arr["rattachement"];
+		
+		if (array_key_exists("etablissement",$arr))
+			$this->etablissement = $arr["etablissement"];
+		
+	}
+	
+	function reload()
+	{
+		if ($this->id)
+		{
+			global $DB;
+			$r = $DB->query("SELECT * FROM t_users WHERE id=". $this->id);
+			if ($r)
+			{
+				$this->initWithArray($DB->getRow($r));
+			}
+		}
+	}
+	function updateGroups($groups)
+	{
+		if ($this->id && $groups)
+		{
+			CUserGroup::removeGroupsOfUser($this->id);
+			foreach($groups as $gid) CUserGroup::addUserToGroup($this->id,$gid);
+		}
+	}
+
+	function setLogin($login)
+	{
+		global $DB;
+		$this->login = $login;
+		if ($this->id) $DB->query("UPDATE t_users SET login=". $DB->STRING($login) . " WHERE id=". $this->id);
+	}
+	function update()
+	{
+		global $DB;
+		$query = "UPDATE t_users SET ". 
+						"nom = " . $DB->STRING($this->nom) . ",".
+						"email = " . $DB->STRING($this->email) .",". 
+						"administrator = " . $DB->INT($this->administrator) .",". 
+						"locked = " . $DB->INT($this->locked) .",". 
+						"email = " . $DB->STRING($this->email) .",". 
+						"etablissement = " . $DB->STRING($this->etablissement) .",". 
+						"addresse = " . $DB->STRING($this->addresse) .",". 
+						"telephone = " . $DB->STRING($this->telephone) .",". 
+						"mobile = " . $DB->STRING($this->mobile) .",". 
+						"fax = " . $DB->STRING($this->fax) . " " .
+					" WHERE id = ". $this->id;
+		return $DB->query($query);
+	}
+	
+	function create()
+	{
+		global $DB;
+		if ($this->administrator)
+		{	if (!CUser::checkAvaibilityOfEmailAndAdmin($this->email)) return false; }
+		$this->setupValidity();
+		$query = "INSERT INTO  t_users  (nom,administrator,manager,contrat,locked,login,expire,email,etablissement,addresse,telephone,mobile,fax,created_date)" .
+					" VALUES (". $DB->STRING($this->nom) . ",".
+								$DB->INT($this->administrator) .",".
+								$DB->INT($this->manager) .",".
+								$DB->INT($this->contrat) .",".
+								$DB->INT($this->locked) .",".
+								$DB->STRING($this->login) .",".
+								$DB->TIMESTAMP($this->expire) .",".
+								$DB->STRING($this->email) .",".
+								$DB->STRING($this->etablissement) .",".
+								$DB->STRING($this->addresse) .",".
+								$DB->STRING($this->telephone) .",".
+								$DB->STRING($this->mobile) .",".
+								$DB->STRING($this->fax) . ",NOW())";
+		$res = $DB->query($query);
+		if ($res)
+		{
+			$this->id = $DB->getLastID();
+			return true;
+		}
+		return false;
+	}
+	
+	function del()
+	{
+		
+	}
+	
+	function info()
+	{
+		return $this->nom;
+	}
+	
+	function deleteObjectsWihtIds(&$selecteds)
+	{
+		CTicket::deleteTicketsforUsers($selecteds);
+		CUserGroup::removeGroupOfUsers($selecteds);
+		global $DB;
+		$DB->query("DELETE FROM t_users WHERE id IN ". $DB->INT_LIST($selecteds));
+	}
+	
+	function deleteUser($id)
+	{
+		global $DB;
+		$DB->query("delete from t_users where id=$id");
+	}
+	
+	function generatePassword($length = 8)
+	{
+		// start with a blank password
+		$password = "";
+		// define possible characters
+		$possible = "0123456789bcdfghjkmnpqrstvwxyzABCDEFGHIJKLMNOPQRZTUVWXYZ"; 
+		// set up a counter
+		$i = 0;
+		// add random characters to $password until $length is reached
+		while ($i < $length) {
+			// pick a random character from the possible ones
+			$char = substr($possible, mt_rand(0, strlen($possible)-1), 1);
+			// we don't want this character if it's already in the password
+			if (!strstr($password, $char)) { 
+				$password .= $char;
+				$i++;
+			}
+		}
+		// done!
+		if ($this) $this->setPassword($password);
+		return $password;
+	}
+	
+	function setPassword($password)
+	{
+		global $DB;
+		$DB->query("UPDATE t_users SET pass=MD5('". $password ."') WHERE id=".$this->id);
+	}
+	
+	function check($zone)
+	{
+		$val = 0;
+		CDebug::TRACE(0,"CUser::check($zone)");
+		if (!CUser::is_logged() && CUser::checkGuestAccessToModule($zone))
+		{
+			$val = 1;
+		} else if (CUser::is_logged() && CUser::checkAccessToModule($zone)) {
+			$val = 1;
+		} else	$val = 0;
+//		CDebug::TRACE(0,"CUser::check($zone) ===> " . $val);
+		return $val;
+	}
+	
+	function checkAccessToModule($zone)
+	{
+		CDebug::TRACE(0,"CUser::checkAccessToModule($zone)");
+		if (!isset($this)) {
+			if ($u = CUser::getCurrentUser()) return $u->checkAccessToModule($zone);
+			else return null;
+		}
+		if ($this->administrator) return true;
+		return CTicket::checkUserAccessToModule($this->id,$zone);
+	}
+	
+	function checkGuestAccessToModule($zone)
+	{
+		return CTemplate::isOpen($zone);
+//		CDebug::TRACE(0,"CUser::checkGuestAccessToModule($zone)");
+//		return (CTicket::existForModule($zone) == false);
+	}
+	
+	function checkWriteToModule($zone="")
+	{
+		if (!$zone) $zone = CTemplate::module();
+		CDebug::TRACE(0,"CUser::checkWriteToModule($zone)");
+		if (!isset($this)) {
+			if ($u = CUser::getCurrentUser()) return $u->checkWriteToModule($zone);
+			else return null;
+		}
+		if ($this->administrator) return true;
+		return CTicket::checkUserWriteToModule($this->id,$zone);
+	}
+	
+	function get_creation() {
+		if ($this->created_date) return strftime("%c",$this->created_date);
+		return "-";
+	}
+	function created_date() {
+		if ($this->created_date) return strftime("%d/%m/%Y",$this->created_date);
+		return "-";
+	}
+	function expire() {
+		if ($this->expire) return strftime("%d/%m/%Y",$this->expire);
+		return "-";
+	}
+	function groups()
+	{
+		return CUserGroup::groupsOfUser($this->id);
+	}
+	
+	function startNewPassword()
+	{
+		return $this->generatePassword();
+	}
+	function isAdministrator()
+	{
+		if (!CUser::is_logged()) return false;
+		if ($u = CUser::getCurrentUser()) return $u->administrator;
+		return false;
+	}
+	function is_administrator()
+	{
+		return CUser::isAdministrator();
+	}
+	function checkIdWithPassword($uid,$pass)
+	{
+		global $DB;
+		return $DB->oneValue("select count(id) from t_users where id=$uid and pass=MD5('$pass')");
+	}
+	function updatePassword($current,$new,$unlock_key=null)
+	{
+		global $DB;
+		if ($unlock_key)
+		{
+			if (!$this->checkUnlockKey($unlock_key)) return false;
+			$query = "UPDATE t_users SET unlock_key='' AND pass= MD5('$new') WHERE id=" . $this->id . " AND unlock_key='$unlock_key'";
+		} else {
+			if (CUser::checkIdWithPassword($this->id,$current) != 1) {
+				return false;
+			}
+			$query = "UPDATE t_users SET pass= MD5('$new') WHERE id=" . $this->id . " AND pass=MD5('$current')";
+		}
+		$DB->query($query);
+		return true;
+	}
+	function checkPassword() {
+		
+	}
+	
+	function logout()
+	{
+		$_SESSION["CURRENT_CUSER"] = null;
+	}
+	
+	function setContrat($id)
+	{
+		global $DB;
+		$this->contrat = $id;
+		$DB->query("UPDATE t_users SET contrat = $id WHERE id=". $this->id);
+	}
+	function date_prolongation($fmt="%d/%m/%Y")
+	{
+		$x = mktime(0,0,0, date("m",$this->created_date) + 13, date("d",$this->created_date), date("Y",$this->created_date));
+		return strftime($fmt,$x);
+	}
+
+	function setupValidity($prolong=3)
+	{
+		if (!$this->administrateur && !$this->expire)
+		{
+			if (!$this->created_date)
+				$ref = strtotime("now");
+			else $ref = $this->created_date;
+			$this->expire = mktime(0,0,0, date("m",$ref) + $prolong, date("d",$ref), date("Y",$ref));
+		}
+	}
+	
+	function updateValidity($prolong=3)
+	{
+		if (!$this->created_date)
+			$ref = strtotime("now");
+		else $ref = $this->created_date;
+		$this->expire = mktime(0,0,0, date("m",$ref) + $prolong, date("d",$ref), date("Y",$ref));
+		global $DB;
+		$DB->query("UPDATE t_users SET expire= ". $DB->TIMESTAMP($this->expire) . " WHERE id=". $this->id);
+	}
+	
+	
+	function classes()
+	{
+		if (!$this) { if ($u = CUser::user()) return $u->classes(); else return null; };
+		return CClasse::classesForManager($this->id);
+	}
+	
+	function checkAccessToClasse($classe_id)
+	{
+		if (!$this) { if ($u = CUser::user()) return $u->checkAccessToClasse($classe_id); else return false; };
+		return CClasse::isManagerOfClasse($this->id,$classe_id);
+	}
+	
+	function etablissement()
+	{
+		if ($this->administrator)
+			return CEtablissement::objectForUser($this->id);
+		else 
+			return CEtablissement::objectForUser($this->manager);
+	}
+	
+	function setRattachement($email)
+	{
+		$this->rattachement = $email;
+		global $DB;
+		$DB->query("UPDATE t_users SET rattachement = '$email' WHERE id = " . $this->id);
+	}
+	
+	function checkUnlockKey($unlock_key)
+	{
+		global $DB;
+		return $DB->oneValue("SELECT COUNT(id) FROM t_users WHERE unlock_key='$unlock_key' AND id = " . $this->id);
+	}
+	
+	function setUnlockKey()
+	{
+		$uid = uniqid($this->id,true);
+		global $DB;
+		$DB->query("UPDATE t_users SET unlock_key = '$uid' WHERE id=". $this->id);
+		return $uid;
+	}
+	
+	function demandesRattachement()
+	{
+		return CUser::allObjectsFromQuery("SELECT * FROM t_users WHERE manager = 0 AND rattachement='" . $this->email . "'");
+	}
+	
+	function attacheTo($user)
+	{
+		if ($user->administrator && !$this->administrator && !$user->manager && $user->email == $this->rattachement)
+		{
+			$etab = $user->etablissement();
+			$this->manager = $user->id;
+			$this->rattachement ='';
+			global $DB;
+			$DB->query("UPDATE t_users SET manager= " . $DB->INT($this->manager) . ", rattachement='' WHERE id=". $this->id);
+		
+			$subject = "[Mezeval] Attachement confirmé";
+		
+			$msg = "Madame, Monsieur,
+		
+		Le rattachement de la classe " . $this->login . " à l'établissement " . $etab->nom() . " a été accepté.
+		
+Bonne utilisation,
+
+Cordialement,
+L’équipe de Mezeval";
+			$head = "From: contact@mezeval.Fr";
+			mail($this->email,$subject,$msg);
+			return true;
+		}
+		return false;
+	}
+	
+	function cancelAttacheBy($user)
+	{
+		if ($user->email == $this->rattachement)
+		{
+			global $DB;
+			$DB->query("UPDATE t_users SET rattachement='' WHERE id = ". $this->id);
+			$subject = "[Mezeval] Attachement annulé";
+			$msg = "Madame, Monsieur,
+
+	l’utilisateur " . $user->nom ." a refusé votre demande de rattachement.
+	
+Cordialement,
+L’équipe de Mezeval";
+			mail($this->email,$subject,$msg,"From: contact@mezeval.fr");
+			return true;
+		}
+		return false;
+	}
+	
+	function demandeRattachement($user)
+	{
+		$subject = "[Mezeval] Demande de rattachement";
+		$msg = "Madame, Monsieur,
+		
+	un utilisateur de Mezeval vous solicite pour attacher la classe à votre établissement :
+ * nom : " . $user->nom . "
+ * email : " . $user->email . "
+
+Le rattachement à votre établissement de cette classe vous permettra de l’intégrer dans votre tableau de bord pédagogique, ainsi que de commander une extension d'utilisation pour l'année.
+
+Pour accepter le rattachement, connectez vous à Mezeval avec vos identifiants, et suivez les instructions disponibles dans la section 'Mes classes'.
+
+Cordialement, l’équipe de Mezeval.";
+		$head = "From: contact@mezeval.Fr";
+		mail($this->email,$subject,$msg,$head);
+	}
+}

@@ -1,0 +1,98 @@
+<?
+/*
+CREATE TABLE `t_progression_periode` (
+	periode int ,
+	progression int ,
+	CONSTRAINT k_1 FOREIGN KEY (periode) REFERENCES t_periode (id) ON DELETE CASCADE,
+	CONSTRAINT k_2 FOREIGN KEY (progression) REFERENCES t_progression (id)  ON DELETE CASCADE,
+	PRIMARY KEY (periode,progression));
+*/		
+class CProgressionPeriode
+{
+	var $periode;
+	var $progression;
+	
+	function existForProgressionAndPeriode($progression_id,$periode_id)
+	{
+		global $DB;
+		return $DB->oneValue("SELECT count(periode) FROM t_progression_periode WHERE progression= $progression_id and periode= $periode_id");
+	}
+	
+	function createForProgression($progression)
+	{
+		$periodes = CPeriode::objectsForClasse($progression->classe);
+		foreach($periodes as $p)
+		{
+			self::createForProgressionAndPeriode($progression->id,$p->id);
+		}
+	}
+
+	function createForPeriode($periode)
+	{
+		$progressions = CProgression::objectsForClasse($periode->classe);
+		foreach($progressions as $p)
+		{
+			self::createForProgressionAndPeriode($p->id,$periode->id);
+		}
+	}
+	
+	function createForProgressionAndPeriode($progression_id,$periode_id)
+	{
+		global $DB;
+		$DB->query("INSERT INTO t_progression_periode (progression,periode) VALUES ($progression_id,$periode_id)");
+		return true;
+	}
+	
+	function deleteForProgressionAndPeriode($progression_id,$periode_id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_progression_periode WHERE progression= $progression_id and periode= $periode_id");
+		return true;
+	}
+	function deleteForProgression($progression_id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_progression_periode WHERE progression= $progression_id");
+		return true;
+	}
+	function deleteForPeriode($periode_id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_progression_periode WHERE periode= $periode_id");
+		return true;
+	}
+
+	function deleteForClasseByProgression($classe_id)
+	{
+		global $DB;
+		$DB->query("DELETE t_progression_periode.* FROM t_progression_periode,t_progression WHERE t_progression_periode.periode=t_progression.id AND t_progression.classe= $classe_id");
+		return true;
+	}
+	function deleteForClasseByPeriode($classe_id)
+	{
+		global $DB;
+		$DB->query("DELETE t_progression_periode.* FROM t_progression_periode,t_periode WHERE t_progression_periode.periode=t_periode.id AND t_periode.classe= $classe_id");
+		return true;
+	}
+	function arrayForPeriode($periode_id)
+	{
+		$res = array();
+		$r = $DB->query("SELECT progression FROM t_progression_periode WHERE periode= $periode_id");
+		while($tmp = $DB->getRow($r))
+		{
+			$res[$tmp[0]] = $tmp[0];
+		}
+		return $res;
+	}
+	function arrayForProgression($progression_id)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query("SELECT periode FROM t_progression_periode WHERE progression=$progression_id");
+		while($tmp = $DB->getRow($r))
+		{
+			$res[$tmp[0]] = $tmp[0];
+		}
+		return $res;
+	}
+}

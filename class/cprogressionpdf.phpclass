@@ -1,0 +1,156 @@
+<?
+
+class CProgressionPdf extends CPdf
+{
+	var $classe = null;
+	var $periodes = null;
+	var $progression_width = 80;
+	var $periode_width = 15;
+	var $affiche_code = 0;
+	var $code_width = 15;
+	var $affiche_code_socle = 0;
+	var $code_socle_width = 15;
+
+	function pdfClasseRow(&$progression,$deep=0)
+	{
+//		CDebug::TRACE(0,"pdfClasseRow(progression,$deep)");
+		if ($this->periodes)
+		{
+			$periodes = $progression->periodesIds();
+			$affiche = false;
+			foreach($this->periodes as $p)
+			{
+				if (in_array($p->id,$periodes)) $affiche = true;
+			}
+			if (!$affiche) return ;
+		}
+		
+		$font_size = 12 - $deep;
+		$offset = 3 * $deep;
+		$fill=0;
+		if ($deep == 0) $fill = 1;
+		if ($this->predictEOP($progression->info(),$this->progression_width - $offset))
+			$this->pdfTableHeader();
+		$this->SetFont("dejavusans", "", $font_size);
+		$this->tableStartRow();
+		if ($this->affiche_code)
+			$this->tableCell($this->code_width,$progression->code,"R",0,0);
+		$this->tableCell($this->progression_width,$progression->info(),"L",0,0,$offset);
+		if ($this->affiche_code_socle)
+			$this->tableCell($this->code_socle_width,$progression->code_socle,"R",0,0);
+		if ($this->periodes)
+		{
+			if (count($this->periodes) > 1 )
+			{
+	//			$periodes = $progression->periodesIds();
+				foreach($this->periodes as $p)
+				{
+					if (in_array($p->id,$periodes)) $txt = "X"; else $txt = "";
+					$this->tableCell($this->periode_width,$txt,"C");
+				}
+			}
+		}
+		$border_width = 0.5;
+		if ($deep > 0)
+			$border_width = 0.5  / $deep;
+		$this->tableRowEnd($border_width);
+		$deep++;
+		foreach($progression->childNodes() as $sub)
+			$this->pdfClasseRow($sub,$deep);
+		
+	}
+	
+	function pdfTableHeader()
+	{
+		$this->tableStartRow();
+		$this->SetFont("dejavusans", "B", 10);
+		$this->SetFillColor(217,217,217);
+		if ($this->affiche_code)
+			$this->tableCell($this->code_width,"code","C",0,0,0,1);
+		$this->tableCell($this->progression_width,"Progression","L",0,0,0,1);
+		if ($this->affiche_code_socle)
+		$this->tableCell($this->code_socle_width,"Socle","L",0,0,0,1);
+		if ($this->periodes)
+		{
+			if (count($this->periodes) > 1 )
+			{
+				foreach($this->periodes as $p)
+					$this->tableCell($this->periode_width,$p->info(),"C",0,0,0,1);
+			}
+		}
+		$this->tableRowEnd(0.5,0.5,0.5);
+	}
+	
+	function setupWidths()
+	{
+		$width = $this->getPageWidth() - $this->lMargin - $this->rMargin;
+		$n = 0;
+		if ($this->periodes)
+		{
+			if (count($this->periodes) > 1 )
+			{
+				$n = count($this->periodes);
+			}
+		}
+		$this->progression_width = $width - ($n * $this->periode_width) - ($this->code_width * $this->affiche_code) - ($this->affiche_code_socle * $this->code_socle_width);
+	}
+	
+	function pdfClasse($classe,$p_id=null,$periodes=null)
+	{
+		$this->classe = $classe;
+		$this->periodes = $periodes;
+		CDebug::TRACE(0,"Periodes :");
+		CDebug::TRACE(0,print_r($periodes,true));
+		$this->AddPage(); 
+
+		$u = CUser::user();
+		$this->SetAuthor($u->info());
+		$this->SetTitle("Programme");
+		$this->SetSubject("Programme de la classe " . $classe->info());
+		$this->SetKeywords("Progressions, " . $classe->info() . ", ".$classe->annee.", mezeval");
+		$etablisement = $classe->etablissement();
+		if ($etablisement)
+			$this->SetHeaderData("", 0, $etablissement->nom);
+		else 
+			$this->SetHeaderData("", 0, $classe->info());
+		
+		// set header and footer fonts
+		$this->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+		$this->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+		//set margins
+		$this->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+		$this->SetHeaderMargin(6);
+		$this->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+		//set auto page breaks
+		$this->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+		//set image scale factor
+		$this->setImageScale(PDF_IMAGE_SCALE_RATIO); 
+
+		//set some language-dependent strings
+		$this->setLanguageArray($l); 
+
+		//initialize document
+		$this->AliasNbPages();
+
+		// set font
+		$this->SetFont("dejavusans", "B", 14);
+		
+		$txt = "Programme " ;
+		if ($this->periodes)
+		{	if (count($this->periodes) == 1) $txt .=  $this->periodes[0]->intitule;
+		}
+		$this->Cell(0,0,$txt,0,1,'C');
+		$this->Cell(0,0,$classe->info(),0,1,'C');
+		$this->Ln();
+		$this->SetLineWidth(0.1);
+
+		$this->setupWidths();
+		
+		$this->pdfTableHeader();
+		foreach($classe->progressions() as $pr)
+			$this->pdfClasseRow($pr);
+	}
+}

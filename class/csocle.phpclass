@@ -1,0 +1,313 @@
+<?
+
+class CSocle
+{
+	var $parser;
+	var $pstack;
+
+	var $code;
+	var $intitule;
+	var $intitule_court;
+	var $description;
+	var $annee;
+	var $childNodes;
+	
+	var $filename;
+	
+	var $type="socle";
+	var $codeMap=null;
+	
+	function type() { return $this->type; }
+	
+	function objectFromFile($file_name)
+	{
+		CDebug::TRACE(0, "chargement du socle ... ");
+		$time_start = microtime(true);
+		$x = CSocle::loadFromSerializedFile($file_name);
+		if (!$x)
+		{
+			CDebug::TRACE(0, "chargement du socle via xml ");
+			$x = new CSocle();
+			$x->loadFromFile($file_name);
+			CSocle::makeSerializedVersion($x);
+		}
+		CDebug::TRACE(0, "chargement du socle : " . (microtime(true) - $time_start));
+		return $x;
+	}
+	
+	function loadFromSerializedFile($file_name)
+	{
+		global $CSOCLES_PATH;
+		$serialized_name = $file_name .".serialized";
+		if (is_file($CSOCLES_PATH ."/". $serialized_name))
+		{
+			if (filectime($CSOCLES_PATH ."/".$serialized_name) > filemtime($CSOCLES_PATH ."/".$file_name))
+				return unserialize(file_get_contents($CSOCLES_PATH ."/".$serialized_name));
+		}
+		return null;
+	}
+	function makeSerializedVersion($socle)
+	{
+		global $CSOCLES_PATH;
+		file_put_contents($CSOCLES_PATH ."/". $socle->filename .".serialized", serialize($socle));
+	}
+	function serializeNodes()
+	{
+		
+	}
+	
+	function CSocle()
+	{
+		$this->childNodes = array();
+		$this->codeMap = array();
+	
+	}
+
+	function searchKey()
+	{
+		return '%';
+	}
+	
+	function loadFromFile($file_name)
+	{
+		if (substr($file_name,-3) == "xml")
+			return $this->loadSocleFromXML($file_name);
+		else if (substr($file_name,-3) == "csv")
+			echo "la";
+		return null;
+	}
+
+	function loadSocleFromXML($file_name)
+	{
+		global $CSOCLES_PATH;
+		$parser = xml_parser_create();
+		$file = fopen($CSOCLES_PATH . "/" . $file_name,"rb");
+		if ($file)
+		{
+			$this->filename = $file_name; 
+			$this->pstack = array();
+			xml_set_object($parser, $this);
+			xml_set_element_handler($parser, 'startXML', 'endXML');
+			while (($data = fread($file, 8192)))
+			{
+				if (!xml_parse($parser, $data, feof($file)))
+				{
+					CDebug::trace(0,sprintf('XML error at line %d column %d', 
+										xml_get_current_line_number($parser), 
+										xml_get_current_column_number($parser)));
+				}
+			}
+		} else CDebug::trace(0,"File $file_name not found");
+		xml_parser_free($parser);		
+	}
+	
+	function loadSocleFromCSV($filename)
+	{
+		$stack = array();
+		
+	}
+
+	function objects()
+	{
+		$res = array();
+		global $CSOCLES_PATH;
+		if (!isset($CSOCLES_PATH))
+		{
+			if (defined("APP_PATH") && is_dir(APP_PATH . "/socles"))
+			{
+				$CSOCLES_PATH = APP_PATH . "/socles";
+			}
+		}
+		
+		if (isset($CSOCLES_PATH))
+		{
+			$d = dir($CSOCLES_PATH);
+			if ($d)
+			{
+				while(false !== ($entry = $d->read()))
+				{
+					if ($entry[0] != "."
+						&& substr($entry,-3) == "xml"
+						&& stristr($entry,"PALIER") != FALSE
+						&& stristr($entry,"serialized") === FALSE)
+						$res[] = $entry;
+				}
+			}
+		}
+		return $res;
+	}
+	
+	
+	function b2iObjects()
+	{
+		$res = array();
+		global $CSOCLES_PATH;
+		if (!isset($CSOCLES_PATH))
+		{
+			if (defined("APP_PATH") && is_dir(APP_PATH . "/socles"))
+			{
+				$CSOCLES_PATH = APP_PATH . "/socles";
+			}
+		}
+		
+		if (isset($CSOCLES_PATH))
+		{
+			$d = dir($CSOCLES_PATH);
+			if ($d)
+			{
+				while(false !== ($entry = $d->read()))
+				{
+					if ($entry[0] != "."
+						&& substr($entry,-3) == "xml"
+						&& stristr($entry,"b2i") != FALSE
+						&& stristr($entry,"serialized") === FALSE)
+						$res[] = $entry;
+				}
+			}
+		}
+		return $res;
+	}
+	function A1Objects()
+	{
+		$res = array();
+		global $CSOCLES_PATH;
+		if (!isset($CSOCLES_PATH))
+		{
+			if (defined("APP_PATH") && is_dir(APP_PATH . "/socles"))
+			{
+				$CSOCLES_PATH = APP_PATH . "/socles";
+			}
+		}
+		
+		if (isset($CSOCLES_PATH))
+		{
+			$d = dir($CSOCLES_PATH);
+			if ($d)
+			{
+				while(false !== ($entry = $d->read()))
+				{
+					if ($entry[0] != "."
+						&& substr($entry,-3) == "xml"
+						&& stristr($entry,"A1") != FALSE
+						&& stristr($entry,"serialized") === FALSE)
+						$res[] = $entry;
+				}
+			}
+		}
+		return $res;
+	}
+	function lastObject()
+	{
+		if (count($this->pstack) == 0) return null;
+		return end($this->pstack);
+	}
+	
+	function startXML($parser,$name,$attr)
+	{
+		CDebug::trace(0,"startXML($parser,$name,$attr)");
+		if ($name == "COMPETENCE")
+		{
+			$o = new CCompetenceSocle();
+			$o->intitule = urldecode($attr["NAME"]);
+			$o->intitule_officiel = urldecode($attr["NAME"]);
+			$o->code = $attr["CODE"];
+			$o->codeEdu = $attr["EDU"];
+			$o->socle = $this;
+			if ($p = $this->lastObject())
+			{
+				$p->appendChild($o);
+			} else $this->childNodes[] = $o;
+			$this->codeMap[$o->code] = $o;
+			array_push($this->pstack,$o);
+		} else  if ($name == "PALIER")
+		{
+			$this->code = $attr["CODE"];
+			$this->type = $attr["TYPE"];
+			$this->intitule = urldecode($attr["NAME"]);
+			$this->intitule_court = urldecode($attr["INTITULE_COURT"]);
+			$this->description = urldecode($attr["DESCRIPTION"]);
+			$this->annee = $attr["ANNEE"];
+			$this->niveau = $attr["NIVEAU"];
+		}
+	}
+	
+	function endXML($parser, $name)
+	{
+		array_pop($this->pstack);
+	}
+	
+	function htmlOptions($deep=1,$selected="",$classe_id=0)
+	{
+		foreach($this->childNodes as $c)
+		{ 	
+			$c->htmlOptions($deep,$selected,$classe_id);
+		} 
+	}
+	function htmlOptionsWithCountOfEvaluationForClasse($deep=1,$selected="",$classe_id=0)
+	{
+		foreach($this->childNodes as $c)
+		{ 	
+			$c->htmlOptionsWithCountOfEvaluationForClasse($deep,$selected,$classe_id);
+		} 
+	}
+	
+	function childNodes()
+	{
+		if (!$this->childNodes) $this->childNodes = array();
+		return $this->childNodes;
+	}
+	
+	function csv()
+	{
+		printf("code;intitule\n");
+		foreach($this->childNodes as $n) $n->csv();
+	}
+	
+	function toJson()
+	{
+		printf('{"code":%s,"intitule":%s,"intitule_court":%s,"annee":%s,"description":%s,childNodes=[]',
+					json_encode($this->code),
+					json_encode($this->intitule),
+					json_encode($this->intitule_court),
+					json_encode($this->annee),
+					json_encode($this->description));
+		$first= "";
+		foreach($this->childNodes() as $n)
+		{
+			if ($first) $first = false;
+			else printf(",");
+			$n->toJSon();
+		} 
+		printf("]}");
+	}
+	function info()
+	{
+		return $this->intitule;
+
+	}
+	function codeMap($code)
+	{
+		return $this->codeMap[$code];
+	}
+	function nodeMach($code)
+	{
+		if ($this->code == $code)
+			return true;
+		return false;
+	}
+	
+	function getElementWithCode($code)
+	{
+		if ($this->code == $code) return $this;
+		else
+		{
+			foreach($this->childNodes() as $n)
+			{
+				if ($r = $n->getElementWithCode($code)) return $r;
+			}
+			return null;
+		}
+	}
+	
+	function __toString() { return "[CSocle]"; }
+}

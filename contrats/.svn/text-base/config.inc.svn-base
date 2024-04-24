@@ -1,0 +1,17 @@
+<?
+
+define("APP_PATH","/Library/WebServer/Documents/poetenotes");
+define("APP_URL","/poetenotes/");
+$TICKETS_VALUES_FILE = APP_PATH . "/tickets.conf";
+
+$CDEBUG_FILENAME = APP_PATH. "/logs/debug.log";
+$CPROGRAMME_PATH = APP_PATH. "/programmes";
+include(APP_PATH . "/class/classloader.inc");
+
+CDatabase::mySql(null,"acquimetre","root","");
+CTemplate::openModule("default");
+CTemplate::openModule("contacts");
+
+session_name("POETE_NOTES");
+
+putenv('GDFONTPATH=' . APP_PATH . '/fonts');

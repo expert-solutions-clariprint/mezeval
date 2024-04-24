@@ -1,0 +1,180 @@
+<?
+/*
+CREATE TABLE `t_bilan_socle_elements` (
+	eleve int ,
+	socle_ref VARCHAR(20),
+	socle_intitule TEXT,
+	affichage int,
+	commentaire TEXT,
+	evaluation varchar(5),
+	created datetime,
+	creator int,
+	PRIMARY KEY (eleve,socle_ref),
+	CONSTRAINT FOREIGN KEY (eleve) REFERENCES t_eleve (id) ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY (periode) REFERENCES t_periode (id) ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY (progression) REFERENCES  t_progression (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+*/
+
+class CBilanSocleElement
+{
+	var $eleve;
+	var $socle_ref;
+	var $type;
+	var $socle_intitule;
+	var $commentaire;
+	var $affichage;
+	var $evaluation;
+	var $created;
+	var $creator;
+	
+	/* class methods */
+			
+	function objectsWithQuery($query,$key=null)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				if ($key) $res[$tmp[$key]] = CBilanSocleElement::objectWithArray($tmp);
+				else $res[] = CBilanSocleElement::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CBilanSocleElement::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function deleteForEleve($eleve_id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_bilan_socle_elements WHERE eleve=$eleve_id");
+	}
+	function deleteForEleveAndType($eleve_id,$type="socle")
+	{
+		global $DB;
+		$DB->query(sprintf("DELETE FROM t_bilan_socle_elements WHERE eleve=%d AND type=%s",$eleve_id,$DB->STRING($type)));
+	}
+
+	function createForEleveRefTypeIntituleWithEvaluationCommentaireAffichage($eleve_id,$socle_ref,$type,$socle_intitule,$evaluation_str,$commentaire_str,$affichage_int)
+	{
+		$x = new CBilanSocleElement();
+		$x->eleve = $eleve_id;
+		$x->type = $type;
+		$x->socle_ref = $socle_ref;
+		$x->socle_intitule = $socle_intitule;
+		$x->commentaire = $commentaire_str;
+		$x->affichage = $affichage_int;
+		$x->evaluation = $evaluation_str;
+	}
+	
+	function objectsForEleveAndTypeByRef($eleve_id,$type="socle",$pour_affichage = false)
+	{
+		global $DB;
+		$q = sprintf("SELECT * from t_bilan_socle_elements where eleve=%d AND type=%s",$eleve_id,$DB->STRING($type));
+		if ($pour_affichage) $q .= " AND affichage=1";
+		return CBilanSocleElement::objectsWithQuery($q,"socle_ref");
+	}
+
+	function objectWithArray(&$arr)
+	{
+		$u = new CBilanSocleElement();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CBilanSocleElement::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+
+	function deleteObjectsWithClasse($classe_id)
+	{
+		global $DB;
+		$DB->query("DELETE t_bilan_socle_elements.* FROM t_bilan_socle_elements,t_eleve WHERE t_bilan_socle_elements.eleve = t_eleve.id AND t_eleve.classe= $classe_id");
+	}
+	function deleteObjectsWithClasseAndTypeSocle($classe_id,$type)
+	{
+		global $DB;
+		$DB->query(sprintf("DELETE t_bilan_socle_elements.* FROM t_bilan_socle_elements,t_eleve WHERE t_bilan_socle_elements.eleve = t_eleve.id AND t_eleve.classe=%d AND t_bilan_socle_elements.type=%s", $classe_id,$DB->STRING($this->type)));
+	}
+
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("eleve",$arr))
+			$this->eleve = $arr["eleve"];
+
+		if (array_key_exists("socle_ref",$arr))
+			$this->socle_ref = $arr["socle_ref"];
+		if (array_key_exists("type",$arr))
+			$this->type = $arr["type"];
+
+		if (array_key_exists("socle_intitule",$arr))
+			$this->socle_intitule = $arr["socle_intitule"];
+
+		if (array_key_exists("commentaire",$arr))
+			$this->commentaire = $arr["commentaire"];
+
+		if (array_key_exists("affichage",$arr))
+			$this->affichage = $arr["affichage"];
+
+		if (array_key_exists("evaluation",$arr))
+			$this->evaluation = $arr["evaluation"];
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+		
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("INSERT INTO t_bilan_socle_elements (
+						eleve,socle_ref,type,socle_intitule,commentaire,
+						affichage,evaluation,
+						created,creator)
+						VALUES (%s,%s,%s,%s,%s,%s,%s,%s,NOW())",
+								$DB->INT($this->eleve),
+								$DB->STRING($this->socle_ref),
+								$DB->STRING($this->type),
+								$DB->STRING($this->socle_intitule),
+								$DB->STRING($this->commentaire),
+								$DB->INT($this->affichage),
+								$DB->STRING($this->evaluation),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->created = strtotime("now");
+				return true;
+			}
+		}
+		return false;
+	}
+	function print_xml($deep)
+	{
+//		if($this->evaluation || $this->commentaire)
+		printf("%s<ELEMENT_BILAN_SOCLE code_socle='%s' intitule_socle='%s' commentaire='%s' affichage='%s' evaluation='%s' />\n",
+				str_repeat("\t",$deep),
+				$this->socle_ref,
+				$this->socle_intitule,
+				urlencode($this->commentaire),
+				$this->affichage,
+				$this->evaluation);
+	}
+}

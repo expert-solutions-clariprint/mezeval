@@ -1,0 +1,211 @@
+<?
+/*
+CREATE TABLE `t_evaluationcompetence` (
+	id INT NOT NULL AUTO_INCREMENT,
+	order_index int,
+	evaluation int,
+	code_socle VARCHAR(10)
+	competence int,
+	mode varchar(200),
+	valeur_max int,
+	description TEXT,
+	created datetime,
+	creator int,
+	unique key (competence,evaluation),
+	PRIMARY KEY (`id`));
+*/
+
+class CEvaluationCompetence
+{
+	var $id;
+	var $order_index;
+	var $evaluation;
+	var $competence;
+	var $code_socle;
+	var $mode;
+	var $valeur_max;
+	var $description;
+	var $created;
+	var $creator;
+	
+	/* class methods */
+	
+	function maxOrderForEvaluation($evaluation_id)
+	{
+		global $DB;
+		return $DB->oneValue("SELECT MAX(order_index) FROM t_evaluationcompetence WHERE evaluation=$evaluation_id");
+	}
+	function createObject($evaluation_id,$competence_id,$mode="STANDARD",$valeur_max="",$desc="")
+	{
+		$o = new CEvaluationCompetence();
+		$o->order_index = CEvaluationCompetence::maxOrderForEvaluation($evaluation_id) + 1;
+		$o->evaluation = $evaluation_id;
+		$o->competence = $competence_id;
+		$o->mode = $mode;
+		$o->valeur_max = $valeur_max;
+		$o->description = $desc;
+		$o->create();
+		return $o;
+	}
+	function deleteWithCompetence($id)
+	{
+		global $DB;
+		CEvaluationEleve::deleteWithProgression($id);
+		$DB->query("DELETE FROM t_evaluationcompetence WHERE competence = $id");
+	}
+	function deleteWithEvaluation($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_evaluationcompetence WHERE evaluation = $id");
+	}
+	function deleteWithId($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_evaluationcompetence WHERE id = $id");
+	}
+	function objectsWithQuery($query,$key="")
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				if ($key)
+					$res[$tmp[$key]] = CEvaluationCompetence::objectWithArray($tmp);
+				else $res[] = CEvaluationCompetence::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CEvaluationCompetence::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($arr = CEvaluationCompetence::objectsWithQuery("SELECT * FROM t_evaluationcompetence WHERE id=$id"))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+
+	function deleteObjectsWithClasse($classe_id)
+	{
+		global $DB;
+		$DB->query("DELETE t_evaluationcompetence.* FROM t_evaluationcompetence,t_evaluation WHERE t_evaluation.id = t_evaluationcompetence.evaluation AND t_evaluation.classe=$classe_id");
+	}
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_evaluationcompetence WHERE id=$id");
+	}
+	
+	function objects()
+	{
+		return CEvaluationCompetence::objectsWithQuery("select * from t_evaluationcompetence order by code");
+	}
+		
+	function objectWithArray(&$arr)
+	{
+		$u = new CEvaluationCompetence();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CEvaluationCompetence::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+		if (array_key_exists("order_index",$arr))
+			$this->order_index = $arr["order_index"];
+		if (array_key_exists("evaluation",$arr))
+			$this->evaluation = $arr["evaluation"];
+		if (array_key_exists("competence",$arr))
+			$this->competence = $arr["competence"];
+		if (array_key_exists("mode",$arr))
+			$this->mode = $arr["mode"];
+		if (array_key_exists("valeur_max",$arr))
+			$this->valeur_max = $arr["valeur_max"];
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	function objectsForEvaluation($evaluation_id,$array_key="")
+	{
+		return CEvaluationCompetence::objectsWithQuery("select * from t_evaluationcompetence where evaluation=$evaluation_id order by order_index asc",$array_key);
+	}
+	
+	function competence()
+	{
+		return CCompetence::objectWithId($this->competence);
+	}
+	function mode()
+	{
+		$mms = CEvaluation::modesCalcul();
+		$res = $mms[$this->mode];
+		if ($this->valeur_max) $res .= " ". $this->valeur_max;
+		return $res;
+	}
+
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("INSERT INTO t_evaluationcompetence (description,order_index,evaluation,competence,mode,valeur_max,creator,created) VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())",
+								$DB->STRING($this->description),
+								$DB->INT($this->order_index),
+								$DB->INT($this->evaluation),
+								$DB->INT($this->competence),
+								$DB->STRING($this->mode),
+								$DB->INT($this->valeur_max),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}
+			
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_evaluationcompetence SET code = %s, intitule = %s, description = %s WHERE id = %s",
+								$DB->STRING($this->code),
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->description),
+								$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+}

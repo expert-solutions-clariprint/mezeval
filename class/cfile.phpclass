@@ -1,0 +1,18 @@
+<?
+
+
+
+class CFile
+{
+	function check
+	function ensureUTF8Content($filename)
+	{
+		if ($content = file_get_contents($filename))
+		{
+			
+		}
+		
+	}
+	
+	
+}

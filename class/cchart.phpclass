@@ -1,0 +1,31 @@
+
+
+class CChart
+{
+	var $img;
+	var $height = 400;
+	var $width = 400;a
+	var $bgcolor = "#FFFFFF";
+	
+	var $colors;
+	function allocImage()
+	{
+		$this->colors = array();
+		$this->initDimensions();
+		$this->img = imagecreate($this->width,$this->height);
+		$this->colors['background'] =
+		$this->bgcolor = this->colorFromHex($this->$bgcolor);
+
+	}
+	
+	function initDimensions()
+	{
+		if ($_GET["width"]) $this->width = $_GET["width"];
+		if ($_GET["height"]) $this->height = $_GET["height"];
+	}
+
+	function colorFromHtml($str)
+	{
+		return imagecolorallocate($this->img, hexdec(substr($str,1,2)),hexdec(substr($str,3,2)),hexdec(substr($str,5,2)));
+	}
+}

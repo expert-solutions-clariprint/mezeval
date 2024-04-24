@@ -1,0 +1,36 @@
+<?xml version='1.0' ?>
+<palier code="A1" name="Livret de langue niveau A1" intitule_court="A1" annee="2008" description="" NIVEAU="" type="langue">
+	<competence code="A1.1" name="Comprendre,réagir et parler in interaction orale">
+		<competence code="A1.1.1" name="Se présenter"/>
+		<competence code="A1.1.2" name="Présenter quelqu'un"/>
+		<competence code="A1.1.3" name="Demander à quelqu'un de ses nouvelles et y réagir en utilisant les formes de politesse les plus élémentaires"/>
+		<competence code="A1.1.4" name="Présenter des excuses"/>
+		<competence code="A1.1.5" name="Répondre à des question sur des sujets familiers"/>
+		<competence code="A1.1.6" name="Répondre à des question sur des besoins immédiats"/>
+		<competence code="A1.1.7" name="Épeler des mots familiers"/>
+	</competence>
+	<competence code="A1.2" name="Comprendre à l'oral">
+		<competence code="A1.2.1" name="Comprende les consignes de classe"/>
+		<competence code="A1.2.2" name="Comprende les mots familiers et des expressions très courantes relatifs à soi-même, sa famille, son environnement concret et immédiat, si les gesn parlent lentement et distinctement."/>
+		<competence code="A1.2.3" name="Suivre des instructions courtes et simples"/>
+		<competence code="A1.2.4" name="Suivre le fils d'une histoire avec des aides appropriées"/>
+	</competence>
+	<competence code="A1.3" name="Parler en continu">
+		<competence code="A1.3.1" name="Reproduite un modèle oral"/>
+		<competence code="A1.3.2" name="Utiiser des expressions et des phrases proches des modèles rencontrés lors des apprentissages pour se décrire"/>
+		<competence code="A1.3.3" name="Utiiser des expressions et des phrases proches des modèles rencontrés lors des apprentissages pour décrire des activités ou sujets familiers en utilisant des connecteurs élémentaires"/>
+		<competence code="A1.3.4" name="Lire à voir haute et de manière expressive un texte bref après répétition"/>
+		<competence code="A1.3.5" name="Raconter une histoire courte et stéréotypée"/>
+	</competence>
+	<competence code="A1.4" name="Lire">
+		<competence code="A1.4.1" name="Comprendre des textes courts et simples en s'appuyant sur des éléments connus (indications, informations)"/>
+		<competence code="A1.4.2" name="Se faire une idée du contenu d'un texte informatif simple, accompagné éventuellement d'un document visuel"/>
+	</competence>
+	<competence code="A1.5" name="Ecrire">
+		<competence code="A1.5.1" name="Copier des mots isolés et des textes courts"/>
+		<competence code="A1.5.2" name="En référence à des modèles, écrire un message electronique simple, une courte carte postale, des formules magiques."/>
+		<competence code="A1.5.3" name="Renseigner un questionnaire"/>
+		<competence code="A1.5.4" name="Produire de manière autonome quelques phrases sur soi-même, sur des personnages réels ou imaginaires"/>
+		<competence code="A1.5.5" name="Écrire sous la dictée des expressions connues"/>
+	</competence>
+</palier>

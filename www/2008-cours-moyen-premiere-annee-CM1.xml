@@ -1,0 +1,189 @@
+﻿<?xml version='1.0' ?>
+<?xml-stylesheet href="http://localhost/mezeval/app/www/programme.xsl" type="application/xml"?>
+<programme annee="2008" name="Cours moyen première année">
+	<section name="Français">
+		<section name="Langage oral">
+			<section name="Raconter, décrire, exposer">
+				<section name="Décrire un objet, présenter un travail à la classe en s’exprimant en phrases correctes et dans un vocabulaire approprié." />
+			</section>
+			<section name="Echanger, débattre">
+				<section name="Demander et prendre la parole à bon escient"/>
+				<section name="Réagir à l’exposé d’un autre élève en apportant un point de vue motivé"/>
+				<section name="Participer à un débat en respectant les tours de parole et les règles de la politesse"/>
+				<section name="Présenter à la classe un travail collectif"/>
+			</section>
+			<section name="Réciter">
+				<section name="Dire sans erreur et de manière expressive des textes en prose ou des poèmes (une dizaine)." />
+			</section>
+		</section>
+		<section name="Lecture, écriture">
+			<section name="Lecture">
+				<section name="Lire sans aide les consignes du travail scolaire, les énoncés de problèmes"/>
+				<section name="Lire à haute voix avec fluidité et de manière expressive un texte d’une dizaine de lignes, après préparation."/>
+				<section name="Lire silencieusement un texte littéraire ou documentaire et le comprendre (reformuler, résumer, répondre à des questions sur ce texte)."/>
+				<section name="Repérer dans un texte des informations explicites et en inférer des informations nouvelles (implicites)."/>
+				<section name="Dans un récit ou une description, s’appuyer sur les mots de liaison qui marquent les relations spatiales et sur les compléments de lieu pour comprendre avec précision la configuration du lieu de l’action ou du lieu décrit."/>
+				<section name="Comprendre l’usage de l’imparfait et du passé simple dans un récit, du présent dans un texte scientifique ou documentaire."/>
+				<section name="Saisir l’atmosphère ou le ton d’un texte descriptif,, narratif ou poétique, en s’appuyant en particulier sur son vocabulaire."/>
+				<section name="Participer à un débat sur un texte en confrontant son interprétation à d’autres de manière argumentée."/>
+				<section name="Utiliser les outils usuels de la classe (manuels, affichages, etc.) pour rechercher une information, surmonter une difficulté."/>
+				<section name="Effectuer des recherches, avec l’aide de l’adulte, dans des ouvrages documentaires (livres ou produits multimédia)."/>
+`			</section>
+			<section name="Littérature">
+				<section name="Lire au moins un ouvrage par trimestre et en rendre compte ; choisir un extrait caractéristique et le lire à haute voix."/>
+				<section name="Adapter son comportement de lecteur aux difficultés rencontrées : notes pour mémoriser, relecture, demande d’aide, etc."/>
+				<section name="Se rappeler le titre et l’auteur des oeuvres lues."/>
+				<section name="Participer à un débat sur une oeuvre en confrontant son point de vue à d’autres de manière argumentée."/>
+`			</section>
+			<section name="Ecriture">
+				<section name="Copier sans erreur un texte d’une dizaine de lignes, en respectant la mise en page s’il y a lieu."/>
+			</section>
+			<section name="Rédaction">
+				<section name="Dans les diverses activités scolaires, noter des idées, des hypothèses, des informations utiles au travail scolaire"/>
+				<section name="Rédiger un court dialogue (formulation des questions et des ordres)."/>
+				<section name="Rédiger des textes courts de différents types (récits, descriptions, portraits) en veillant à leur cohérence, à leur précision, (pronoms, mots de liaison, relations temporelles en particulier) et en évitant les répétitions."/>
+				<section name="Savoir amplifier une phrase simple par l’ajout d’éléments coordonnés (et, ni, ou, mais entre des mots ou des phrases simples ; car, donc entre des phrases simples), d’adverbes, de compléments circonstanciels et par l’enrichissement desgroupes nominaux."/>
+			</section>
+		</section>
+		<section name="Etude de la langue française">
+			<section name="Vocabulaire">
+				<section name="Acquisition du vocabulaire">
+					<section name="Utiliser à bon escient des termes afférents aux actions, sensations et jugements." />
+				</section>
+				<section name="Maîtrise du sens des mots">
+					<section name="Utiliser le contexte pour comprendre un mot inconnu ; vérifier son sens dans le dictionnaire"/>
+					<section name="Définir un mot connu en utilisant un terme générique adéquat (mots concrets : ex. un pommier est un arbre fruitier)."/>
+					<section name="Commencer à identifier les différents niveaux de langue."/>
+				</section>
+				<section name="Les familles de mots">
+					<section name="Regrouper des mots selon le sens de leur préfixe"/>
+					<section name="Regrouper des mots selon le sens de leur suffixe"/>
+					<section name="Connaître et utiliser oralement le vocabulaire concernant la construction des mots (radical, préfixe, suffixe, famille)"/>
+					<section name="Utiliser la construction d’un mot inconnu pour le comprendre"/>
+				</section>				
+				<section name="Utilisation du dictionnaire">
+					<section name="Dans une définition de dictionnaire, identifier le terme générique."/>
+					<section name="Utiliser le dictionnaire pour vérifier le sens d’un mot (en particulier quand il en a plusieurs), ou sa classe, ou son orthographe, ou son niveau de langue."/>
+					<section name="Se servir des codes utilisés dans les articles de dictionnaire."/>
+				</section>
+			</section>
+			<section name="Grammaire">
+				<section name="La phrase">
+					<section name="Construire correctement des phrases négatives, interrogatives, injonctives."/>
+					<section name="Identifier les verbes conjugués dans des phrases complexes et fournir leurs infinitifs."/>
+				</section>
+				<section name="Les classes de mots">
+					<section name="Distinguer selon leur nature les mots des classes déjà connues, ainsi que les déterminants démonstratifs et interrogatifs, les pronoms personnels (sauf en, y), les pronoms relatifs (qui, que), les adverbes (de lieu, de temps, de manière), les négations."/>
+				</section>
+				<section name="Les fonctions">			
+					<section name="Dans une phrase simple où l’ordre sujet-verbe est respecté">
+						<section name="identifier le verbe et le sujet (nom propre, groupe nominal, pronom personnel, pronom relatif)"/>
+						<section name="reconnaître le complément d’objet second"/>
+						<section name="reconnaître les compléments circonstanciels de lieu, de temps,"/>
+						<section name="reconnaître l’attribut du sujet."/>
+					</section>
+					<section name="Comprendre la notion de circonstance : la différence entre complément d’objet et complément circonstanciel (manipulations)."/>
+					<section name="Le groupe nominal">
+						<section name="manipulation de la proposition relative (ajout, suppression, substitution à l’adjectif ou au complément de nom et inversement)."/>					
+						<section name="Connaître les fonctions de l’adjectif qualificatif : épithète, attribut du sujet." />
+					</section>
+				</section>
+			</section>
+			<section name="Orthographe">
+				<section name="Ecrire sans erreur sous la dictée un texte d’une dizaine de lignes en mobilisant les connaissances acquises."/>			
+				<section name="Orthographe grammaticale">
+					<section name="Ecrire sans erreur le pluriel des noms se terminant par –eu, par –eau. Le pluriel des noms en –au, -ail est en cours d’acquisition." />
+					<section name="Ecrire sans erreur les formes des verbesétudiés aux temps étudiés, dont les verbes du premier groupe en -cer, -ger, -guer"/>
+					<section name="Appliquer la règle de l’accord du verbe avec son sujet, y compris pour les verbes à un temps composé, et pour les sujets inversés."/>
+					<section name="Appliquer la règle de l’accord du participe passé avec être et avoir (cas du complément d’objet direct postposé)"/>
+					<section name="Accorder sans erreur l’adjectif (épithète, apposé et attribut du sujet) avec le nom"/>
+					<section name="Ecrire sans erreur les homophones grammaticaux déjà étudiés, ainsi que ses/ces, mes/mais, on/on n’, ce/se, c’/s’ (c’est/s’est, c’était/s’était), ou/où, la/l’a/l’as/là."/>
+					<section name="Ecrire sans erreur les infinitifs de verbes du premier groupe après préposition (il me dit d’aller)."/>
+				</section>
+				<section name="Orthographe lexicale">
+					<section name="Ecrire sans erreur des mots invariables, en particulier les plus fréquents de ceux étudiés en grammaire."/>
+					<section name="S’appuyer sur sa connaissance des familles de mots pour écrire sans erreur des mots nouveaux (préfixe in-, im-, il- ou ir-, suffixe -tion…)."/>
+					<section name="Mémoriser la graphie de la syllabe finale des noms terminés par -ail, -eil, -euil"/>
+				</section>
+			</section>
+		</section>
+	</section>
+	<section name="MATHEMATIQUES">
+		<section name="Nombres et calcul">
+			<section name="Les nombres entiers jusqu’au milliard">
+				<section name="Connaître, savoir écrire et nommer les nombres entiers jusqu’au milliard."/>
+				<section name="Comparer, ranger, encadrer ces nombres."/>
+				<section name="La notion de multiple : reconnaître les multiples des nombres d’usage courant : 5, 10, 15, 20, 25, 50."/>
+			</section>
+			<section name="Fractions">
+				<section name="Nommer les fractions simples et décimales en utilisant le vocabulaire: demi, tiers, quart, dixième, centième"/>
+				<section name="Utiliser, ces fractions dans des cas simples de partage, ou de codage de mesures de grandeurs"/>
+			</section>
+			<section name="Nombres décimaux">
+				<section name="Connaître la valeur de chacun des chiffres de la partie décimale en fonction de sa position (jusqu’au 1/100e)."/>
+				<section name="Savoir">
+					<section name="les repérer, les placer sur une droite graduée"/>
+					<section name="les comparer, les ranger"/>
+					<section name="les encadrer par deux nombres entiers consécutifs"/>
+					<section name="passer d’une écriture fractionnaire à une écriture à virgule et réciproquement."/>
+				</section>
+			</section>
+			<section name="Calcul">
+				<section name="Calculer mentalement">
+					<section name="Consolider les connaissances et capacités en calcul mental sur les nombres entiers"/>
+					<section name="Multiplier mentalement un nombre entier ou décimal par 10, 100, 1000"/>
+					<section name="Estimer mentalement un ordre de grandeur du résultat."/>
+				</section>
+				<section name="Effectuer un calcul posé">
+					<section name="Addition et soustraction de deux nombres décimaux."/>
+					<section name="Multiplication d’un nombre décimal par un nombre entier"/>
+					<section name="Division euclidienne de deux entiers"/>
+					<section name="Division décimale de deux entiers"/>
+					<section name="Connaître quelques fonctionnalités de la calculatrice utiles pour effectuer une suite de calculs."/>
+				</section>
+				<section name="Problèmes">
+					<section name="Résoudre des problèmes engageant une démarche àune ou plusieurs étapes"/>
+				</section>
+			</section>
+		</section>
+		<section name="Géométrie">
+			<section name="Dans le plan">
+				<section name="Reconnaître que des droites sont parallèles."/>
+				<section name="Utiliser en situation le vocabulaire géométrique : points alignés, droite, droites perpendiculaires, droites parallèles, segment, milieu, angle, axe de symétrie, centre d’un cercle, rayon, diamètre."/>
+				<section name="Vérifier la nature d’une figure plane simple en utilisant la règle graduée, l’équerre, le compas."/>
+				<section name="Décrire une figure en vue de l’identifier parmi d’autres figures ou de la faire reproduire"/>
+			</section>
+			<section name="Dans l’espace">
+				<section name="Reconnaître, décrire et nommer les solides droits : cube, pavé, prisme."/>
+				<section name="Reconnaître ou compléter un patron de cube ou de pavé"/>
+			</section>
+			<section name="Problèmes de reproduction, de construction.">
+				<section name="Compléter une figure par symétrie axiale."/>
+				<section name="Tracer une figure simple à partir d’un programme de construction ou en suivant des consignes."/>
+			</section>
+		</section>
+		<section name="Grandeurs et mesure">
+			<section name="Connaître et utiliser les unités usuelles de mesure des durées, ainsi que les unités du système métrique pour les longueurs, les masses et les contenances, et leurs relations"/>
+			<section name="Reporter des longueurs à l’aide du compas."/>
+			<section name="Formules du périmètre du carré et du rectangle"/>
+			<section name="Aires">
+				<section name="Mesurer ou estimer l’aire d’une surface grâce à un pavage effectif à l’aide d’une surface de référence (d’aire une unité) ou grâce à l’utilisation d’un réseau quadrillé."/>
+				<section name="Classer et ranger des surfaces selon leur aire."/>
+			</section>
+			<section name="Angles">
+				<section name="Comparer les angles d’une figure en utilisant un gabarit."/>
+				<section name="Estimer, et vérifier en utilisant l’équerre, qu’un angle est droit, aigu, ou obtus."/>
+			</section>
+			<section name="Problèmes">
+				<section name="Résoudre des problèmes dont la résolution implique éventuellement des conversions."/>
+			</section>
+		</section>
+		<section name="Organisation et gestion de données">
+			<section name="Construire un tableau ou un graphique" />
+			<section name="Interpréter un tableau ou un graphique."/>
+			<section name="Lire les coordonnées d’un point."/>
+			<section name="Placer un point dont on connaît les coordonnées."/>
+			<section name="Utiliser un tableau ou la « règle de trois » dans des situations très simples de proportionnalité."/>
+		</section>
+	</section>
+</programme>

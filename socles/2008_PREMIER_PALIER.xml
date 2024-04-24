@@ -1,0 +1,60 @@
+﻿<?xml version='1.0' ?>
+<palier code="P1" name="PREMIER PALIER POUR LA MAITRISE DU SOCLE COMMUN" decription="COMPETENCES ATTENDUES A LA FIN DU CE1" annee="2008" NIVEAU="CE1" type="socle">
+	<competence code="LF.1" name="LA MAÎTRISE DE LA LANGUE FRANÇAISE">
+		<competence code="LF.1.1" name="s’exprimer clairement à l’oral en utilisant un vocabulaire approprié" /> 
+		<competence code="LF.1.2" name="lire seul, à haute voix, un texte comprenant des mots connus et inconnus" />
+		<competence code="LF.1.3" name="lire seul et écouter lire des textes du patrimoine et des œuvres intégrales de la littérature de jeunesse, adaptés à son âge" />
+		<competence code="LF.1.4" name="lire seul et comprendre un énoncé, une consigne simples" />
+		<competence code="LF.1.5" name="dégager le thème d’un paragraphe ou d’un texte court" />
+		<competence code="LF.1.6" name="copier un  texte court sans erreur dans une écriture cursive lisible et avec une présentation soignée" />
+		<competence code="LF.1.6" name="écrire sans erreur sous la dictée un texte de 5 lignes en utilisant ses connaissances lexicales, orthographiques et grammaticales" />
+		<competence code="LF.1.8" name="utiliser ses connaissances pour mieux écrire un texte court" />
+		<competence code="LF.1.9" name="écrire de manière autonome un texte de 5 à 10 lignes" />
+	</competence>
+	<competence code="LE.1" name="LA PRATIQUE D’UNE LANGUE VIVANTE ÉTRANGÈRE">
+		<competence code="LE.1.1" name="comprendre et utiliser des énoncés simples de la vie quotidienne." />
+ 	</competence>
+	<competence code="MS.1" name="LES PRINCIPAUX ÉLÉMENTS DE MATHÉMATIQUES ET LA CULTURE SCIENTIFIQUE ET TECHNOLOGIQUE">
+		<competence code="MS.1.1" name="écrire, nommer, comparer, ranger les nombres entiers naturels inférieurs à 1000"/>
+		<competence code="MS.1.2" name="calculer : addition, soustraction, multiplication"/>
+		<competence code="MS.1.3" name="diviser par 2 et par 5 des nombres  entiers inférieurs à 100 (dans le cas où le quotient exact est entier)"/>
+		<competence code="MS.1.4" name="restituer et utiliser les tables d’addition et de multiplication par 2, 3, 4 et 5"/>
+		<competence code="MS.1.5" name="calculer mentalement en utilisant des additions, des soustractions et des multiplications simples"/>
+		<competence code="MS.1.6" name="situer un objet par rapport à soi ou à un autre objet, donner sa position et décrire son déplacement"/>
+		<competence code="MS.1.7" name="reconnaître, nommer et décrire les figures planes et les solides usuels"/>
+		<competence code="MS.1.8" name="utiliser la règle et l’équerre pour tracer avec soin et précision un carré, un rectangle, un triangle rectangle"/>
+		<competence code="MS.1.9" name="utiliser les unités usuelles de mesure ; estimer une mesure"/>
+		<competence code="MS.1.10" name="être précis et soigneux dans les tracés, les mesures et les calculs"/>
+		<competence code="MS.1.11" name="résoudre des problèmes très simples"/>
+		<competence code="MS.1.12" name="observer et décrire pour mener des investigations"/>
+		<competence code="MS.1.13" name="appliquer des règles élémentaires de sécurité pour prévenir les risques d’accidents domestiques"/>
+ 	</competence> 
+	<competence code="TIC.1" name="LA MAÎTRISE DES TECHNIQUES USUELLES DE L’INFORMATION ET DE LA COMMUNICATION">
+		<competence code="TIC.1.1" name="commencer à s’approprier un environnement numérique"/>
+ 	</competence>
+	<competence code="HUM.1" name="LA CULTURE HUMANISTE">
+		<competence code="HUM.1.1" name="dire de mémoire quelques textes en prose ou poèmes courts"/>
+		<competence code="HUM.1.2" name="découvrir quelques éléments culturels d’un autre pays"/>
+		<competence code="HUM.1.3" name="distinguer le passé récent du passé plus éloigné"/>
+		<competence code="HUM.1.4" name="s’exprimer par l’écriture, le chant, la danse, le dessin, la peinture, le volume  (modelage, assemblage)"/>
+		<competence code="HUM.1.5" name="distinguer certaines grandes catégories de la création artistique (musique, danse, théâtre, cinéma, dessin, peinture, sculpture)"/>
+		<competence code="HUM.1.6" name="reconnaître des œuvres visuelles ou musicales préalablement étudiées"/>
+		<competence code="HUM.1.7" name="fournir une définition très simple de différents métiers artistiques (compositeur, réalisateur, comédien, musicien, danseur)"/>
+ 	</competence>
+	<competence code="CSC.1" name="LES COMPÉTENCES SOCIALES ET CIVIQUES">
+		<competence code="CSC.1.1" name="reconnaître les emblèmes et les symboles de la République française"/>
+		<competence code="CSC.1.2" name="respecter les autres et les règles de la vie collective"/>
+		<competence code="CSC.1.3" name="pratiquer un jeu ou un sport collectif en en respectant les règles"/>
+		<competence code="CSC.1.4" name="appliquer les codes de la politesse dans ses relations avec ses camarades, avec les adultes à l’école et hors de l’école, avec le maître au sein de la classe"/>
+		<competence code="CSC.1.5" name="participer en classe à un échange verbal en respectant les règles de la communication"/>
+		<competence code="CSC.1.6" name="appeler les secours ; aller chercher de l’aide auprès d’un adulte"/>
+ 	</competence>
+ 	<competence code="AI.1" name="L’AUTONOMIE ET L’INITIATIVE">
+		<competence code="AI.1.1" name="écouter pour comprendre, interroger, répéter, réaliser un travail ou une activité"/>
+		<competence code="AI.1.2" name="échanger, questionner, justifier un point de vue"/>
+		<competence code="AI.1.3" name="travailler en groupe, s’engager dans un projet"/>
+		<competence code="AI.1.4" name="maîtriser quelques conduites motrices comme courir, sauter, lancer"/>
+		<competence code="AI.1.5" name="se représenter son environnement proche, s’y repérer, s’y déplacer de façon adaptée"/>
+		<competence code="AI.1.6" name="appliquer des règles élémentaires d’hygiène"/>
+ 	</competence> 
+</palier>

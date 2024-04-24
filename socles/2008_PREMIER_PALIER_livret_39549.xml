@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding="UTF-8"?>
+<!DOCTYPE palier SYSTEM "http://local.mezeval.fr/dtds/socle.dtd">
+<palier name="PALIER 1 CE1" code="P1"  type="socle">
+	<competence code="P1.LF" name="La maîtrise de la langue française">
+		<competence code="P1.LF.DIRE" name="DIRE">
+			<competence code="P1.LF.DIRE.1" name="S%27exprimer%20clairement%20%C3%A0%20l%27oral%20en%20utilisant%20un%20vocabulaire%20appropri%C3%A9%20"/>
+			<competence code="P1.LF.DIRE.2" name="Participer en classe à un échange verbal en respectant les règles de la communication" />
+			<competence code="P1.LF.DIRE.3" name="Dire de mémoire quelques textes en prose ou poèmes courts" />
+		</competence>	
+		<competence code="P1.LF.LIRE" name="LIRE">
+			<competence code="P1.LF.LIRE.1" name="Lire seul, à haute voix, un texte comprenant des mots connus et inconnus" />
+			<competence code="P1.LF.LIRE.2" name="Lire seul et écouter lire des textes du patrimoine et des œuvres intégrales de la littérature de jeunesse adaptés à son âge" />
+			<competence code="P1.LF.LIRE.3" name="Lire seul et comprendre un énoncé, une consigne simple" />
+			<competence code="P1.LF.LIRE.4" name="Dégager le thème d’un paragraphe ou d’un texte court" />
+			<competence code="P1.LF.LIRE.5" name="Lire silencieusement un texte en déchiffrant les mots inconnus et manifester sa compréhension dans un résumé, une reformulation, des réponses à des questions" />
+		</competence>
+		<competence code="P1.LF.ECRIRE" name="ÉCRIRE">
+			<competence code="P1.LF.ECRIRE.1" name="Copier un texte court sans erreur dans une écriture cursive lisible et avec une présentation soignée" />
+			<competence code="P1.LF.ECRIRE.2" name="Utiliser ses connaissances pour mieux écrire un texte court" />
+			<competence code="P1.LF.ECRIRE.3" name="Écrire de manière autonome un texte de cinq à dix lignes" />
+		</competence>
+		<competence code="P1.LF.VOCABULAIRE" name="ÉTUDE DE LA LANGUE : VOCABULAIRE">
+			<competence code="P1.LF.VOCABULAIRE.1" name="Utiliser des mots précis pour s’exprimer"/>
+			<competence code="P1.LF.VOCABULAIRE.2" name="Donner des synonymes"/>
+			<competence code="P1.LF.VOCABULAIRE.3" name="Trouver un mot de sens opposé"/>
+			<competence code="P1.LF.VOCABULAIRE.4" name="Regrouper des mots par familles"/>
+			<competence code="P1.LF.VOCABULAIRE.5" name="Commencer à utiliser l’ordre alphabétique"/>
+		</competence>
+		<competence code="P1.LF.GRAMMAIRE" name="ÉTUDE DE LA LANGUE : GRAMMAIRE">
+			<competence code="P1.LF.GRAMMAIRE.1" name="Identifier la phrase, le verbe, le nom, l’article, l’adjectif qualificatif, le pronom personnel (sujet)"/>
+			<competence code="P1.LF.GRAMMAIRE.2" name="Repérer le verbe d’une phrase et son sujet"/>
+			<competence code="P1.LF.GRAMMAIRE.3" name="Conjuguer les verbes du 1er groupe, être et avoir, au présent, au futur, au passé composé de l’indicatif ; conjuguer les verbes faire, aller, dire, venir, au présent de l’indicatif"/>
+			<competence code="P1.LF.GRAMMAIRE.4" name="Distinguer le présent, du futur et du passé"/>
+		</competence>
+		<competence code="P1.LF.ORTHOGRAPHE" name="ÉTUDE DE LA LANGUE : ORTHOGRAPHE">
+			<competence code="P1.LF.ORTHOGRAPHE.1" name="Écrire en respectant les correspondances entre lettres et sons et les règles relatives à la valeur des lettres" />
+			<competence code="P1.LF.ORTHOGRAPHE.2" name="Écrire sans erreur des mots mémorisés" />
+			<competence code="P1.LF.ORTHOGRAPHE.3" name="Orthographier correctement des formes conjuguées, respecter l’accord entre le sujet et le verbe, ainsi que les accords en genre et en nombre dans le groupe nominal" />
+		</competence>
+	</competence>
+	<competence code="P1.MATH" name="Les principaux éléments de mathématiques">
+		<competence code="P1.MATH.CALCUL" name="NOMBRES ET CALCUL">
+			<competence code="P1.MATH.CALCUL.1" name="Écrire, nommer, comparer, ranger les nombres entiers naturels inférieurs à 1000"/>
+			<competence code="P1.MATH.CALCUL.2" name="Résoudre des problèmes de dénombrement" />
+			<competence code="P1.MATH.CALCUL.3" name="Calculer : addition, soustraction, multiplication" />
+			<competence code="P1.MATH.CALCUL.4" name="Diviser par 2 et par 5 dans le cas où le quotient exact est entier" />
+			<competence code="P1.MATH.CALCUL.5" name="Restituer et utiliser les tables d’addition et de multiplication par 2, 3, 4 et 5" />
+			<competence code="P1.MATH.CALCUL.6" name="Calculer mentalement en utilisant des additions, des soustractions et des multiplications simples" />
+			<competence code="P1.MATH.CALCUL.7" name="Résoudre des problèmes relevant de l’addition, de la soustraction et de la multiplication" />
+			<competence code="P1.MATH.CALCUL.8" name="Utiliser les fonctions de base de la calculatrice" />
+		</competence>
+		<competence code="P1.MATH.GEO" name="NOMBRES ET GÉOMÉTRIE">
+			<competence code="P1.MATH.GEO.1" name="Situer un objet par rapport à soi ou à un autre objet, donner sa position et décrire son déplacement" />
+			<competence code="P1.MATH.GEO.2" name="Reconnaître, nommer et décrire les figures planes et les solides usuels" />
+			<competence code="P1.MATH.GEO.3" name="Utiliser la règle et l’équerre pour tracer avec soin et précision un carré, un rectangle, un triangle rectangle" />
+			<competence code="P1.MATH.GEO.4" name="Percevoir et reconnaître quelques relations et propriétés géométriques : alignement, angle droit, axe de symétrie, égalité de longueurs" />
+			<competence code="P1.MATH.GEO.5" name="Repérer des cases, des nœuds d’un quadrillage" />
+			<competence code="P1.MATH.GEO.6" name="Résoudre un problème géométrique" />
+		</competence>
+		<competence code="P1.MATH.MES" name="GRANDEURS ET MESURES">
+			<competence code="P1.MATH.MES.1" name="Utiliser les unités usuelles de mesure ; estimer une mesure" />
+			<competence code="P1.MATH.MES.2" name="Être précis et soigneux dans les tracés, les mesures et les calculs" />
+			<competence code="P1.MATH.MES.3" name="Résoudre des problèmes de longueur et de masse" />
+		</competence>
+		<competence code="P1.MATH.ORG" name="ORGANISATION ET GESTION DE DONNÉES">
+			<competence code="P1.MATH.ORG.1" name="Utiliser un tableau, un graphique" />
+			<competence code="P1.MATH.ORG.2" name="Organiser les données d’un énoncé" />
+		</competence>
+	</competence>
+	<competence code="P1.CIV" name="Les compétences sociales et civiques">
+		<competence code="P1.CIV.FOND" name="CONNAÎTRE LES PRINCIPES ET FONDEMENTS DE LA VIE CIVIQUE ET SOCIALE">
+			<competence code="P1.CIV.FOND.1" name="Reconnaître les emblèmes et les symboles de la république française"/>
+		</competence>
+		<competence code="P1.CIV.RESP" name="AVOIR UN COMPORTEMENT RESPONSABLE">
+			<competence code="P1.CIV.RESP.1" name="Respecter les autres et les règles de la vie collective"/>
+			<competence code="P1.CIV.RESP.1" name="Pratiquer un jeu ou un sport collectif en en respectant les règles"/>
+			<competence code="P1.CIV.RESP.1" name="Appliquer les codes de la politesse dans ses relations avec ses camarades, avec les adultes à l’école et hors de l’école, avec le maître au sein de la classe"/>
+		</competence>
+	</competence>
+</palier>
+

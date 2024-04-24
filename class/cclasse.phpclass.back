@@ -1,0 +1,410 @@
+<?
+/*
+Representation des élèves
+CREATE TABLE t_classe (
+  id int(11) NOT NULL auto_increment,
+  intitule varchar(200) default NULL,
+  description text,
+  annee int(11) default NULL,
+  created datetime default NULL,
+  creator int(11) default NULL,
+  etablissement int(11) default NULL,
+  socle varchar(100) default NULL,
+  a_color varchar(7) default NULL,
+  b_color varchar(7) default NULL,
+  c_color varchar(7) default NULL,
+  z_color varchar(7) default NULL,
+  a_code VARCHAR(3) default null;
+  b_code VARCHAR(3) default null;
+  c_code VARCHAR(3) default null;
+  z_code VARCHAR(3) default null;
+
+  PRIMARY KEY  (id),
+  KEY etablissement (etablissement),
+  CONSTRAINT FOREIGN KEY (etablissement) REFERENCES t_etablissement (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+*/
+
+class CClasse
+{
+	var $id;
+	var $etablissement;
+	var $intitule;
+	var $niveau;
+	var $annee;
+	var $description;
+	var $manager;
+	var $contrat;
+	var $a_color;
+	var $b_color;
+	var $c_color;
+	var $z_color;
+
+	var $a_code;
+	var $b_code;
+	var $c_code;
+	var $z_code;
+
+
+	var $socle;
+	var $created;
+	var $creator;
+	
+	/* class methods */
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CClasse::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CClasse::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($u = CUser::user())
+		{
+			if ($arr = CClasse::objectsWithQuery("SELECT * FROM t_classe WHERE id=$id and manager=".$u->id))
+			{
+				return $arr[0];
+			}
+		}
+		return null;
+	}
+
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		if ($u = CUser::user())
+		{
+			if (CClasse::isManagerOfClasse($u->id,$id))
+			{
+				CEvaluation::deleteObjectsWithClasse($id);
+				CBilanProgression::deleteObjectsWithClasse($id);
+				CBilanSocle::deleteObjectsWithClasse($id);
+				CEleve::deleteObjectsWithClasse($id);
+				CPeriode::deleteObjectsWithClasse($id);
+				CProgression::deleteObjectWithClasse($id);
+				$DB->query("DELETE FROM t_classe WHERE id=$id");
+			}
+		}
+	}
+	
+	function classesForManager($manager_id)
+	{
+		return CClasse::objectsWithQuery("select * from t_classe WHERE manager=$manager_id ORDER BY annee,intitule desc");
+	}
+	
+	function objects()
+	{
+		return CClasse::objectsWithQuery("select * from t_classe order by annee,intitule desc");
+	}
+	function objectsForEtablissement($etab_id)
+	{
+		return CClasse::objectsWithQuery("select * from t_classe WHERE etablissement=$etab_id order by annee desc,intitule asc");
+	}
+		
+	function objectWithArray(&$arr)
+	{
+		$u = new CClasse();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CClasse::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	function isManagerOfClasse($user_id,$classe_id)
+	{
+		global $DB;
+		return $DB->oneValue("SELECT COUNT(id) FROM t_classe WHERE id=$classe_id AND manager=$user_id");
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+		if (array_key_exists("etablissement",$arr))
+			$this->etablissement = $arr["etablissement"];
+
+		if (array_key_exists("manager",$arr))
+			$this->manager = $arr["manager"];
+
+		if (array_key_exists("intitule",$arr))
+			$this->intitule = stripcslashes($arr["intitule"]);
+		if (array_key_exists("niveau",$arr))
+			$this->niveau = $arr["niveau"];
+
+		if (array_key_exists("annee",$arr))
+			$this->annee = $arr["annee"];
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+		if (array_key_exists("socle",$arr))
+			$this->socle = stripcslashes($arr["socle"]);
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+
+		if (array_key_exists("a_color",$arr))
+			$this->a_color = strtotime($arr["a_color"]);
+		if (array_key_exists("b_color",$arr))
+			$this->b_color = strtotime($arr["b_color"]);
+		if (array_key_exists("c_color",$arr))
+			$this->c_color = strtotime($arr["c_color"]);
+		if (array_key_exists("z_color",$arr))
+			$this->z_color = strtotime($arr["z_color"]);
+/*
+		if (array_key_exists("a_code",$arr))
+			$this->a_code = strtotime($arr["a_code"]);
+		if (array_key_exists("b_code",$arr))
+			$this->b_code = strtotime($arr["b_code"]);
+		if (array_key_exists("c_code",$arr))
+			$this->c_code = strtotime($arr["c_code"]);
+		if (array_key_exists("z_code",$arr))
+			$this->z_code = strtotime($arr["z_code"]); */
+
+	}
+	
+	function create()
+	{
+		global $DB;
+		
+		if ($u = CUser::getCurrentUser())
+		{
+			
+			$query = sprintf("INSERT INTO t_classe (intitule,niveau,etablissement,annee,description,socle,a_color,b_color,c_color,z_color,manager,creator,created) VALUES (%s,%s,%s,%d,%s,%s,%s,%s,%s,%s,%s,%s,NOW())",
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->niveau),
+								$DB->ID($this->etablissement),
+								$DB->INT($this->annee),
+								$DB->STRING($this->description),
+								$DB->STRING($this->socle),
+								$DB->STRING($this->a_color),
+								$DB->STRING($this->b_color),
+								$DB->STRING($this->c_color),
+								$DB->STRING($this->z_color),
+/*								$DB->STRING($this->a_code),
+								$DB->STRING($this->b_code),
+								$DB->STRING($this->c_code),
+								$DB->STRING($this->z_code), */
+								$DB->ID($u->id),
+								$DB->ID($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}
+			
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_classe SET intitule = %s,niveau = %s, annee=%s, description = %s, socle = %s, a_color = %s, b_color = %s, c_color = %s, z_color = %s WHERE id = %s",
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->niveau),
+								$DB->INT($this->annee),
+								$DB->STRING($this->description),
+								$DB->STRING($this->socle),
+								$DB->STRING($this->a_color),
+								$DB->STRING($this->b_color),
+								$DB->STRING($this->c_color),
+								$DB->STRING($this->z_color),
+								$DB->ID($this->id));
+			$DB->query($query);
+		}
+	}
+	
+	function info()
+	{
+		return $this->intitule();
+	}
+	function intitule()
+	{
+		if (!$this->intitule) return "nouveau groupe";
+		return $this->intitule;
+	}
+	function periodes()
+	{
+		return CPeriode::objectsForClasse($this->id);
+	}
+	function eleves()
+	{
+		return CEleve::objectsForClasse($this->id);
+	}
+	
+	function socle()
+	{
+		if ($this->socle) return CSocle::objectFromFile($this->socle);
+		return null;
+	}
+	
+	function progressions()
+	{
+		return CProgression::parentsForClasse($this->id);
+	}
+	function bilansProgression()
+	{
+		return CBilanProgression::objectsForClasse($this->id);
+	}
+
+	function url_colors()
+	{
+		if (!$this || !is_a($this,"CClasse"))
+		{
+			if ($c = $_SESSION["classe"]) return $c->url_colors();
+			else return "";
+		}
+		return sprintf("a_color=%s&b_color=%s&c_color=%s&z_color=%s",
+						urlencode($this->a_color()),
+						urlencode($this->b_color()),
+						urlencode($this->c_color()),
+						urlencode($this->z_color()));
+	}
+	
+	function colorsArray()
+	{
+		return array(
+				$this->a_color(),
+				$this->b_color(),
+				$this->c_color(),
+				$this->z_color());
+	}
+
+	function a_color()
+	{
+		if ($this->a_color) return $this->a_color;
+		return "#00ff99";
+	}
+
+	function b_color()
+	{
+		if ($this->b_color) return $this->b_color;
+		return "#ffff99";
+	}
+	function c_color()
+	{
+		if ($this->c_color) return $this->c_color;
+		return "#ffcc33";
+	}
+	function z_color()
+	{
+		if ($this->z_color) return $this->z_color;
+		return "#cccccc";
+	}
+	function colorForEval($e)
+	{
+		switch($e)
+		{
+			case 'a' : return $this->a_color();
+			case 'b' : return $this->b_color();
+			case 'c' : return $this->c_color();
+			case 'x': return $this->z_color();
+		}
+		return "#FFFFFF";
+	}
+	function decimalColorForEval($e)
+	{
+		$c = $this->colorForEval($e);
+		
+		return sprintf("%s,%s,%s",
+							hexdec(substr($c,1,2)),
+							hexdec(substr($c,3,2)),
+							hexdec(substr($c,5,2)));
+	}
+	
+	function etablissement()
+	{
+		if ($this->etablissement)
+		return CEtablissement::objectWithId($this->etablissement);
+	}
+	
+	function annee()
+	{
+		if (!$this->annee) return date("Y");
+		return $this->annee;
+	}
+	function evaluations()
+	{
+		return CEvaluation::objectsForClasse($this->id);
+	}
+	
+	function print_xml($deep=0)
+	{
+		printf("%s<CLASSE intitule='%s' niveau='%s' annee='%s' a_color='%s' b_color='%s' c_color='%s' z_color='%s' socle='%s' description='%s'>\n",
+				str_repeat("\t",$deep),
+				urlencode($this->intitule),
+				$this->niveau,
+				$this->annee,
+				$this->a_color,
+				$this->b_color,
+				$this->c_color,
+				$this->z_color,
+				urlencode($this->socle),
+				urlencode($this->description));
+		
+		$eleves = $this->eleves();
+		$periodes = $this->periodes();
+		$deep++;
+		printf("%s<ELEVES>\n",str_repeat("\t",$deep));
+		foreach($eleves as $e) $e->print_xml($deep + 1);
+		printf("%s</ELEVES>\n",str_repeat("\t",$deep));
+		printf("%s<PERIODES>\n",str_repeat("\t",$deep));
+		foreach($periodes as $p) $p->print_xml($deep + 1);
+		printf("%s</PERIODES>\n",str_repeat("\t",$deep));
+		printf("%s<PROGRESSIONS>\n",str_repeat("\t",$deep));
+		foreach($this->progressions() as $c) CProgramme::exportProgression($c,$deep + 1);
+		printf("%s</PROGRESSIONS>\n",str_repeat("\t",$deep));
+		printf("%s<EVALUATIONS>\n",str_repeat("\t",$deep));
+		foreach($this->evaluations() as $e) $e->print_xml($deep + 1,true);
+		printf("%s</EVALUATIONS>\n",str_repeat("\t",$deep));
+		printf("%s<BILANS>\n",str_repeat("\t",$deep));
+		foreach($periodes as $p)
+		{
+			foreach($eleves as $e)
+			{
+				if ($b = CBilanProgression::objectForEleveAndPeriode($e->id,$p->id)) $b->print_xml($deep +1);
+			}
+		}
+		foreach($eleves as $e)
+		{
+			if ($b = CBilanSocle::objectForEleve($e->id)) $b->print_xml($deep +1);
+		}
+		printf("%s</BILANS>\n",str_repeat("\t",$deep));
+		$deep--;
+		printf("%s</CLASSE>\n",str_repeat("\t",$deep));
+	}
+	function __tostring()
+	{
+		return "[CClasse:" . $this->intitule . "]";
+	}
+	
+}

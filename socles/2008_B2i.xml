@@ -1,0 +1,30 @@
+<?xml version='1.0' ?>
+<palier code="B2i" name="Brevet informatique et internet scolaire" intitule_court="B2i" annee="2008" description="" NIVEAU="" type="b2i">
+	<competence code="B2i.E.1" name="S'approprier un environnement informatique de travail">
+		<competence code="B2i.E.1.1" name="Je sais désigner et nommer les principaux éléments composant l'équipement informatique que j'utilise et je sais à quoi ils servent."/>
+		<competence code="B2i.E.1.2" name="Je sais allumer et éteindre l'équipement informatique; je sais lancer et quitter un logiciel."/>
+		<competence code="B2i.E.1.3" name="Je sais déplacer le pointeur, placer le curseur, sélectionner, effacer et valider."/>
+			<competence code="B2i.E.1.4" name="Je sais accéder à un dossier, ouvrir et enregistrer un fichier."/>
+	</competence>
+	<competence code="B2i.E.2" name="Adopter une attitude responsable">
+		<competence code="B2i.E.2.1" name="Je connais les droits et devoirs indiqués dans la charte/> d’usage des TIC de mon école."/>
+		<competence code="B2i.E.2.2" name="Je respecte les autres et je me protège moi-même dans le cadre de la communication et de la publication électroniques."/>
+		<competence code="B2i.E.2.3" name="Si je souhaite récupérer un document, je vérifie que j'ai le droit de l'utiliser et à quelles conditions."/>
+		<competence code="B2i.E.2.4" name="Je trouve des indices avant d’accorder ma confiance aux informations et propositions que la machine me fournit."/>
+	</competence>
+	<competence code="B2i.E.3" name="Créer, produire, traiter, exploiter des données">
+		<competence code="B2i.E.3.1" name="Je sais produire et modifier un texte, une image ou un son."/>
+		<competence code="B2i.E.3.2" name="Je sais saisir les caractères en minuscules, en majuscules, les différentes lettres accentuées et les signes de ponctuation."/>
+		<competence code="B2i.E.3.3" name="Je sais modifier la mise en forme des caractères et des paragraphes."/>
+		<competence code="B2i.E.3.4" name="Je sais utiliser les fonctions copier, couper, coller, insérer, glisser, déposer."/>
+		<competence code="B2i.E.3.5" name="Je sais regrouper dans un même document du texte ou des images ou du son."/>
+		<competence code="B2i.E.3.6" name=" Je sais imprimer un document"/>
+	</competence>
+
+	<competence code="B2i.E.4" name="S'informer, se documenter">
+		<competence code="B2i.E.4.1" name="Je sais utiliser les fenêtres, ascenseurs, boutons de défilement, liens, listes déroulantes, icônes et onglets."/>
+		<competence code="B2i.E.4.2" name="Je sais repérer les informations affichées à l'écran."/>
+		<competence code="B2i.E.4.3" name="Je sais saisir une adresse internet et naviguer dans un site."/>
+		<competence code="B2i.E.4.4" name="Je sais utiliser un mot-clé ou un menu pour faire une recherche."/>
+	</competence>
+</palier>

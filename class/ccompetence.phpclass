@@ -1,0 +1,177 @@
+<?
+/*
+CREATE TABLE `t_competence` (
+	id INT NOT NULL AUTO_INCREMENT,
+	code varchar(200),
+	intitule varchar(200),
+	classe int,
+	description TEXT,
+	parentcp int,
+	created datetime,
+	creator int,
+	PRIMARY KEY (`id`));
+*/		
+class CCompetence
+{
+	var $id;
+	var $code;
+	var $intitule;
+	var $intitule_officel;
+	var $code_socle;
+	var $parentcp;
+	var $classe;
+	var $description;
+	var $created;
+	var $creator;
+	
+	/* class methods */
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CCompetence::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CCompetence::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($arr = CCompetence::objectsWithQuery("SELECT * FROM t_competence WHERE id=$id"))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		foreach(CCompetence::objectForParent($id) as $s) CCompetence::deleteObjectWithId($s->id);
+		CEvaluationCompetence::deleteWithCompetence($id);
+		$DB->query("DELETE FROM t_competence WHERE id=$id");
+	}
+	function deleteObjectWithClasse($classe_id)
+	{
+		global $DB;
+		
+		$DB->query("DELETE FROM t_competence WHERE classe=$classe_id");
+	}
+
+
+	function objects()
+	{
+		return CCompetence::objectsWithQuery("select * from t_competence order by code");
+	}
+
+	function objectWithArray(&$arr)
+	{
+		$u = new CCompetence();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CCompetence::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	function objectsForClasse($classe_id)
+	{
+		return CCompetence::objectsWithQuery("select * from t_competence where classe=$classe_id order by code desc");
+	}
+	function parentsForClasse($classe_id)
+	{
+		return CCompetence::objectsWithQuery("select * from t_competence where classe=$classe_id and parentcp=0 order by code desc");
+	}
+	function objectForParent($parent_id)
+	{
+		return CCompetence::objectsWithQuery("select * from t_competence where parentcp=$parent_id order by code desc");
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("code",$arr))
+			$this->code = stripcslashes($arr["code"]);
+		if (array_key_exists("intitule",$arr))
+			$this->intitule = stripcslashes($arr["intitule"]);
+		if (array_key_exists("intitule_officel",$arr))
+			$this->intitule_officel = stripcslashes($arr["intitule_officel"]);
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+		if (array_key_exists("classe",$arr))
+			$this->classe = $arr["classe"];
+		if (array_key_exists("parentcp",$arr))
+			$this->parentcp = $arr["parentcp"];
+		if (array_key_exists("code_socle",$arr))
+			$this->code_socle = $arr["code_socle"];
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("INSERT INTO t_competence (code,intitule,intitule_officel,parentcp,classe,description,code_socle,creator,created) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,NOW())",
+								$DB->STRING($this->code),
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->intitule_officel),
+								$DB->INT($this->parentcp),
+								$DB->INT($this->classe),
+								$DB->STRING($this->description),
+								$DB->STRING($this->code_socle),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_competence SET code = %s, intitule = %s,  intitule_officel = %s, description = %s,code_socle = %s WHERE id = %s",
+								$DB->STRING($this->code),
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->intitule_officel),
+								$DB->STRING($this->description),
+								$DB->STRING($this->code_socle),
+								$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+	function info() {return $this->intitule;}
+}

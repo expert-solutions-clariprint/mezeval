@@ -1,0 +1,611 @@
+<?
+/*
+CREATE TABLE `t_bilan_socle` (
+	eleve int,
+	commentaires TEXT,
+	date_bilan datetime,
+	created datetime,
+	creator int,
+	PRIMARY KEY (`eleve`),
+	CONSTRAINT  FOREIGN KEY (eleve) REFERENCES `t_eleve` (`id`) ON DELETE RESTRICT
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+*/
+
+class CBilanSocle
+{
+	var $eleve;
+	var $commentaires;
+	var $date_bilan;
+	var $socle;
+
+	var $created;
+	var $creator;
+	
+	var $type = "socle"; // "socle","b2i","langue"
+	
+	var $db_table = "t_bilan_socle";
+		
+	/* class methods */
+
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CBilanSocle::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CBilanSocle::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+
+
+	function objectWithArray(&$arr)
+	{
+		$u = new CBilanSocle();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CBilanSocle::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+
+	function existsForEleve($eleve_id,$type="socle")
+	{
+		global $DB;		
+		return $DB->oneValue(sprintf("SELECT COUNT(eleve) FROM t_bilan_socle WHERE eleve=%d AND type=%s ",$eleve_id,$DB->STRING($type)));
+	}
+	function objectForEleve($eleve_id,$type="socle")
+	{
+		global $DB;
+		$r = CBilanSocle::objectsWithQuery(sprintf("SELECT * from t_bilan_socle WHERE eleve=%d AND type=%s",$eleve_id,$DB->STRING($type)));
+		if (count($r) == 1) return $r[0];
+		return null;
+	}
+
+	function deleteObjectsWithClasse($classe_id)
+	{
+		CBilanSocleElement::deleteObjectsWithClasse($classe_id);
+		global $DB;
+		$DB->query(sprintf("DELETE t_bilan_socle.* FROM t_bilan_socle,t_eleve WHERE t_bilan_socle.eleve = t_eleve.id AND t_eleve.classe= %d",$classe_id));
+	}
+	function deleteObjectsWithClasseAndType($classe_id,$type="socle")
+	{
+		CBilanSocleElement::deleteObjectsWithClasseAndTypeSocle($classe_id,$type);
+		global $DB;
+		$DB->query(sprintf("DELETE t_bilan_socle.* FROM t_bilan_socle,t_eleve WHERE t_bilan_socle.eleve = t_eleve.id AND t_eleve.classe= %d AND t_bilan_socle.type=%s",$classe_id,$DB->STRING($type)));
+	}
+
+
+
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("eleve",$arr))
+			$this->eleve = $arr["eleve"];
+		if (array_key_exists("commentaires",$arr))
+			$this->commentaires = $arr["commentaires"];
+
+		if (array_key_exists("type",$arr))
+			$this->type = $arr["type"];
+
+		if (array_key_exists("date_bilan",$arr))
+			$this->date_bilan = strtotime($arr["date_bilan"]);
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+
+		$this->stored = true;
+	}
+	
+	function date_bilan()
+	{
+		if ($this->date_bilan) return strftime("%d/%m/%Y",$this->date_bilan);
+		return date("d/m/Y");
+	}
+
+	function intitule()
+	{
+		if ($this->intitule) return $this->intitule;
+		return "Nouveau bilan";
+	}
+	
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("INSERT INTO %s (
+						commentaires,eleve,type,date_bilan,
+						created,creator)
+						VALUES (%s,%s,%s,%s,%s,NOW())",
+								$this->db_table,
+								$DB->STRING($this->commentaires),
+								$DB->INT($this->eleve),
+								$DB->STRING($this->type),
+								$DB->DATE($this->date_bilan),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->stored = true;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->stored) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE %s SET commentaires = %s, date_bilan = %s WHERE eleve = %s",
+								$this->db_table,
+								$DB->STRING($this->commentaires),
+								$DB->DATE($this->date_bilan),
+								$DB->INT($this->eleve));
+			$DB->query($query);
+		}
+	}
+
+	function socle()
+	{
+		$e = $this->eleve();
+		$c = $e->classe();
+		if ($this->type=="b2i")
+			return $c->b2i();
+		else if ($this->type=="langue")
+			return $c->langue();
+		return $c->socle();
+	}
+	function eleve()
+	{
+		return CEleve::objectWithId($this->eleve);
+	}
+	
+	function deleteEvaluations()
+	{
+		CBilanSocleElement::deleteForEleveAndType($this->eleve,$this->type);
+	}
+	
+	function loadElements($pour_affichage=false)
+	{
+		$this->elements = CBilanSocleElement::objectsForEleveAndTypeByRef($this->eleve,$this->type,$pour_affichage);
+	}
+	function elements()
+	{
+		return CBilanSocleElement::objectsForEleveAndTypeByRef($this->eleve,$this->type,false);
+	}
+	
+	function elementForKey($k)
+	{
+		if ($this->elements)
+		{
+			return $this->elements[$k];
+		}
+		return null;
+	}
+	
+	function initPdfDocument()
+	{
+		$pdf = new CPdf();
+		// put a line top and bottom on all the pages
+		// set document information
+		$pdf->init();
+		$pdf->setPageFormat('A5');
+		$pdf->afficheHeader  = false;
+		$pdf->SetMargins(15, 12, 15);
+		// set font
+		$pdf->SetFont("dejavusans", "", 11);
+		
+		$pdf->SetFillColor(0,0,0,false,10);
+		$this->pdf = $pdf;
+	}
+	function pdf($pdf=null)
+	{
+		$this->options_impression_globales = CUserOption::arrayWithName("IMPRESSION","BILAN");
+		$eleve = $this->eleve();
+		if (!$this->classe) $this->classe = $eleve->classe();
+		$etablissement = $this->classe->etablissement();
+		$this->loadElements();
+		$socle = null;
+		if ($this->type == "b2i")
+			$socle = $this->classe->b2i();
+		else if ($this->type == "langue")
+			$socle = $this->classe->langue();
+		else $socle = $this->classe->socle();
+
+		if (count($this->elements) == 0 ) return null;
+		
+		if ($pdf == null) $this->initPdfDocument(); else $this->pdf = $pdf;
+
+		$this->pdf->SetAutoPageBreak(true);
+		$this->pdf->startPageGroup();
+		if ($this->type == "b2i")
+			$this->pdfPageGardeAnnexeB2i();
+		else if ($this->type == "langue")
+			$this->pdfPageGardeAnnexeLangue();
+		else $this->pdfPageGardeAnnexe();
+		$first = true;
+		foreach($socle->childNodes() as $glob)
+		{
+			$this->pdfAnnexe2Page($socle,$glob,$first);
+			$first = false;
+		}
+		if ($this->options_impression_globales["ajout_page_blanche"])
+		{
+			$np = $this->pdf->getNumPages();
+			if ($np % 2 == 1)
+				$this->pdf->AddPage(); 
+		}
+		return $this->pdf;		
+	}
+
+	function pdfPageGardeAnnexe()
+	{
+		$this->pdf->AddPage(); 
+
+//		$this->pdf->ImageEps(RESSOURCES_PATH ."/logo_ministere_educ_nat2.eps");
+		$this->pdf->Image(RESSOURCES_PATH ."/test.png",15,15,18);
+		
+//		$this->
+		$this->pdf->setFont("dejavusans", "", 36);
+
+		$o = $this->pdf->Text( 50, 27,"Annexe 2");
+
+
+		$this->pdf->setFont("dejavusans", "", 20);
+		$this->pdf->setY(56);
+		$o = $this->pdf->Cell(0,0,"Attestation de maîtrise". $this->type,0,1,'L');
+		$o = $this->pdf->Cell(0,0,"des connaissances",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"et compétences au cours",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"élémentaire de première",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"années et au cours moyen",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"seconde année",0,1,'L');
+		$this->pdf->Ln(30);
+		
+		$eleve = $this->eleve();
+		$this->pdf->setFont("dejavusans", "", 14);
+		
+		$o = $this->pdf->Cell(0,0,"Nom : " . $eleve->nom ,0,1,'L');
+		$o = $this->pdf->Cell(0,0,"Prénom : " . $eleve->prenom ,0,1,'L');
+		$o = $this->pdf->Cell(0,0,"Date de naissance :" . $eleve->date_naissance() ,0,1,'L');
+	}
+	function pdfPageGardeAnnexeB2i()
+	{
+		$this->pdf->AddPage(); 
+
+//		$this->pdf->ImageEps(RESSOURCES_PATH ."/logo_ministere_educ_nat2.eps");
+		$this->pdf->Image(RESSOURCES_PATH ."/test.png",15,15,18);
+		
+//		$this->
+		$this->pdf->setFont("dejavusans", "", 36);
+
+		$o = $this->pdf->Text( 50, 27,"B2i");
+
+
+		$this->pdf->setFont("dejavusans", "", 20);
+		$this->pdf->setY(56);
+		$o = $this->pdf->Cell(0,0,"Brevet Informatique",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"et Internet scolaire",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"Feuille de position",0,1,'L');
+		$this->pdf->Ln(30);
+		
+		$eleve = $this->eleve();
+		$this->pdf->setFont("dejavusans", "", 14);
+		
+		$o = $this->pdf->Cell(0,0,"Nom : " . $eleve->nom ,0,1,'L');
+		$o = $this->pdf->Cell(0,0,"Prénom : " . $eleve->prenom ,0,1,'L');
+		$o = $this->pdf->Cell(0,0,"Date de naissance :" . $eleve->date_naissance() ,0,1,'L');
+	}
+	function pdfPageGardeAnnexeLangue()
+	{
+		$this->pdf->AddPage(); 
+
+//		$this->pdf->ImageEps(RESSOURCES_PATH ."/logo_ministere_educ_nat2.eps");
+		$this->pdf->Image(RESSOURCES_PATH ."/test.png",15,15,18);
+		
+//		$this->
+		$this->pdf->setFont("dejavusans", "", 36);
+
+		$o = $this->pdf->Text( 50, 27,"CECRL A1");
+
+
+		$this->pdf->setFont("dejavusans", "", 20);
+		$this->pdf->setY(56);
+		$o = $this->pdf->Cell(0,0,"Livret de ",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"compétences en langue",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"",0,1,'L');
+		$o = $this->pdf->Cell(0,0,"Découverte de la langue",0,1,'L');
+		$this->pdf->Ln(30);
+		
+		$eleve = $this->eleve();
+		$this->pdf->setFont("dejavusans", "", 14);
+		
+		$o = $this->pdf->Cell(0,0,"Nom : " . $eleve->nom ,0,1,'L');
+		$o = $this->pdf->Cell(0,0,"Prénom : " . $eleve->prenom ,0,1,'L');
+		$o = $this->pdf->Cell(0,0,"Date de naissance :" . $eleve->date_naissance() ,0,1,'L');
+	}
+
+
+	function pdfGlobalGraphBackground($top,$width,$height)
+	{
+		$left = $this->pdf->GetX();
+		$this->pdf->Line($left, $top + $height / 4, $left + $width, $top + $height / 4,array('width' => 0.1));
+		$this->pdf->Line($left, $top + $height / 2 , $left + $width, $top + $height / 2,array('width' => 0.1));
+		$this->pdf->Line($left, $top + 3 * $height / 4, $left + $width, $top + 3 * $height / 4,array('width' => 0.1));
+	}
+	
+	function pdfGlobalGraphAxes($top,$width,$height)
+	{
+		$left = $this->pdf->GetX();
+		$this->pdf->Line($left,$top, $left, $top + $height,array('width' => 0.1));
+		$this->pdf->Line($left, $top + $height, $left + $width, $top + $height,array('width' => 0.1));
+	}
+	
+	function pdfGlobalGraphBars($top,$width,$height,$index,$vals,$colors)
+	{
+		$sep= 2;
+		$val = $vals[$index];
+		$tot = array_sum($vals);
+		$colwidth  = $width / count($vals);
+		$bar_width = $colwidth - 2 * $sep;
+		$bar_left = $this->pdf->GetX() + $colwidth * $index + $sep;
+		$bar_top = $top + $height *  (1 - $val / $tot);
+		$bar_h = $height *  $val / $tot;
+		
+		$this->SetFillColor($colors[$index]);
+
+		$this->pdf->Rect($bar_left, $bar_top,$bar_width, $bar_h, 'F'); // ,array(), [array $fill_color = array()])
+		$percent = 100 * $val / $tot;
+		$txt = sprintf("%.1f %%",$percent);
+		$txt_w = $this->pdf->GetStringWidth($txt);
+		
+		$this->pdf->Text($bar_left + ($bar_width - $txt_w) / 2, $bar_top - 0.5, $txt);
+
+	}
+	function SetDrawColor($str)
+	{
+		$r = hexdec(substr($str,-6,2));
+		$v = hexdec(substr($str,-4,2));
+		$b = hexdec(substr($str,-2,2));
+		CDebug::TRACE(0,"color : $str -> ($r,$v,$b)");
+		return $this->pdf->SetDrawColor($r, $v, $b,true);
+	}
+	function SetFillColor($str)
+	{
+		$r = hexdec(substr($str,-6,2));
+		$v = hexdec(substr($str,-4,2));
+		$b = hexdec(substr($str,-2,2));
+		CDebug::TRACE(0,"color : $str -> ($r,$v,$b)");
+		return $this->pdf->SetFillColor($r, $v, $b,true);
+	}
+	
+
+	function getGraphValues()
+	{
+		$n_a = 0;
+		$n_b = 0;
+		$n_c = 0;
+		$n_z = 0;
+		foreach($this->elements as $e) 
+		{
+			if ($e->affichage)
+			{
+				switch($e->evaluation)
+				{
+					case 'A':
+					case 'a':
+						$n_a ++; break;
+					case 'B':
+					case 'b':
+						$n_b ++; break;
+					case 'c':
+					case 'c':
+						$n_c ++; break;
+					case '':
+					case '':
+						$n_z ++; break;
+				}
+			}
+		}
+		return array($n_a,$n_b,$n_c,$n_z);
+	}
+	function pdfGlobalGraph2($top,$width,$height,$vals,$colors)
+	{
+		$pw = $this->pdf->getPageWidth();
+		$this->pdf->SetX(($pw - $width) / 2);
+		$this->pdfGlobalGraphBackground($top,$width,$height);
+//		$vals = $this->getGraphValues();
+		$i = 0;
+		for($i = 0; $i < count($vals);$i++)
+		{
+			$this->pdfGlobalGraphBars($top,$width,$height,$i,$vals,$colors);
+		}
+		$this->pdfGlobalGraphAxes($top,$width,$height);
+	}
+	
+	function pdfGlobalGraph()
+	{
+		$vals = $this->getGraphValues();
+		$colors = array($this->classe->a_color(),
+						$this->classe->b_color(),
+						$this->classe->c_color(),
+						$this->classe->z_color());
+
+		$this->pdfGlobalGraph2($this->pdf->GetY(),100,50,$vals,$colors);
+		$this->pdf->SetY($this->pdf->GetY() + 50);
+	}
+	
+	function pdfAnnexe2Page($socle,$competence,$header=false)
+	{
+		if ($this->pdf->getY() > 80 || $header) {
+			$this->pdf->AddPage();
+			$this->pdf->SetFont("dejavusans", "B", 16);
+			$this->pdf->MultiCell(0,0,$socle->intitule,0,"L",0,1);
+		} else $this->pdf->Ln("10");
+		$this->pdf->SetFont("dejavusans", "", 16);
+			
+		$this->pdf->MultiCell(0,0,$competence->intitule,0,'L',0,1);
+		CDebug::TRACE(0,"getCellHeightRatio:". $this->pdf->getCellHeightRatio());
+		$this->pdf->setCellHeightRatio(0.9);
+		$first = true; 
+		foreach($competence->childNodes() as $comp)
+		{
+			$this->pdfAnnexe2Row($socle,$comp,1,$first);
+			$first = false;
+		}
+	}
+	function pdfAnnexeHeadRow()
+	{
+
+		$this->pdf->SetFont("dejavusans", "", 8);
+		$this->pdf->tableStartRow();
+		$this->pdf->tableCell(100,"");
+		$this->pdf->tableCell(9,"oui","C");
+		$this->pdf->tableCell(9,"non","C");
+		$this->pdf->tableRowEnd(0.1,0.1,0.1);
+	}
+	function pdfAnnexe2Row($socle,$competence,$deep,$first=false)
+	{
+		$this->pdf->predictEOP($competence->intitule,100);
+		$this->pdf->SetY($this->pdf->getY() - 0.8);
+		$subs = $competence->childNodes();
+		if ($deep==1 &&  count($subs) > 0)
+		{
+			$this->pdf->SetFont("dejavusans", "B", 9);
+			$border="T";
+			$top_border = 0.2;
+		}
+		else 
+		{
+			$top_border = 0.1;
+			$this->pdf->SetFont("dejavusans", "", 8);
+			$border = "B";
+		}
+//		if (count())
+//		$this->pdf->MultiCell(100,0,$competence->intitule,$border,"L",0,0);
+		$sfirst = true;
+		if (count($subs) > 0)
+		{
+			$this->pdf->tableStartRow();
+			$this->pdf->tableCell(100,$competence->intitule);
+			$this->pdf->SetFont("dejavusans", "", 8);
+			$this->pdf->tableCell(9,"oui","C");
+			$this->pdf->tableCell(9,"non","C");
+			$sfirst = false;
+		} else {
+			if ($first)
+				$this->pdfAnnexeHeadRow();
+			$this->pdf->tableStartRow();
+			$this->pdf->tableCell(100,$competence->intitule);
+			CDebug::TRACE(0,print_r($competence,true));
+			$v = $this->elementForKey($competence->code);
+			if ($v->evaluation) { $oui = "X"; $non = "" ;}
+			else { $oui = ""; $non = "X" ;}
+			$this->pdf->tableCell(9,$oui,"C");
+			$this->pdf->tableCell(9,$non,"C");
+		}
+		$this->pdf->table_row_bottom = $this->pdf->table_row_bottom + 10.0;
+		$this->pdf->tableRowEnd(0.1,0.1,0);
+		$deep++;
+		$first = $sfirst;
+		foreach($subs as $s) 
+		{
+			$this->pdfAnnexe2Row($socle,$s,$deep,$first);
+			$first = false;
+		}
+	}
+	
+	function pdfResultTable($max_deep=100)
+	{
+		$this->pdf->SetFont("dejavusans", "", 11);
+		$this->pdf->SetFontSize(11);
+		$this->pdf->Cell(100, 0, "Progression", 1, 0,"L",1);
+		$this->pdf->Cell(30, 0, "Évaluation", 1, 0,"L",1);
+		$this->pdf->Cell(50, 0, "Précisions", 1, 1,"L",1);
+		$str .= $this->pdfResultRow(0,0,$max_deep);
+		return $str;
+	}
+	function pdfResultRow($progression,$deep=0,$max_deep=100)
+	{
+		$this->pdf->SetFontSize(11 - $deep/2);
+		if ($progression == null)
+		{
+			$res = "";
+			foreach(CProgression::parentsForClasse($this->classe->id) as $p)
+				$res .= $this->pdfResultRow($p,$deep,$max_deep);
+			return $res;
+		} else {
+			$str = "";
+			if ($e = $this->elements[$progression->id])
+			{
+				if ($e->affichage)
+				{
+					$x1 = $this->pdf->GetX();
+					$y1 = $this->pdf->GetY();
+					$this->pdf->MultiCell(100, 0, $progression->info(), 0,"L",0,0);
+					$x2 = $this->pdf->GetX();
+					$this->pdf->MultiCell(30, 0, $e->evaluation, 0, "C",0,0);
+					$x3 = $this->pdf->GetX();
+					$this->pdf->MultiCell(50, 0, $e->commentaire, 0, "L",0,0);
+					$x4 = $this->pdf->GetX();
+					$this->pdf->Ln();
+					$y2 = $this->pdf->GetY();
+					$this->pdf->Line($x1,$y1,$x1,$y2);
+					$this->pdf->Line($x2,$y1,$x2,$y2);
+					$this->pdf->Line($x3,$y1,$x3,$y2);
+					$this->pdf->Line($x4,$y1,$x4,$y2);
+					$this->pdf->Line($x1,$y1,$x4,$y1);
+					$this->pdf->Line($x1,$y2,$x4,$y2);
+					$deep += 1;
+					foreach($progression->childNodes() as $child) {
+						$this->pdfResultRow($child,$deep,$max_deep);
+					}
+					return $res;
+				}
+			}
+		}
+		return "";
+	}
+	function __toString() { return "[CBilanSocle]"; }
+
+	function print_xml($deep=0)
+	{
+		printf("%s<BILAN_SOCLE intitule='%s' type='%s' socle='%s' eleve='eleve_%s' commentaires='%s' date='%s' date_creation='%s' autheur='%s'>\n",
+				str_repeat("\t",$deep),
+					urlencode($this->intitule),
+						$this->type,
+						$this->socle,
+							$this->eleve,
+							urlencode($this->commentaires),
+								strftime("%Y%m%d",$this->date_bilan),
+									strftime("%Y%m%d",$this->created),
+										$this->creator);
+		$elems = $this->elements();
+		$deep++;
+		foreach($elems as $e) $e->print_xml($deep);
+		$deep--;
+		printf("%s</BILAN_SOCLE>\n",str_repeat("\t",$deep));
+	}
+}

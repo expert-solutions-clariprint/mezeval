@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT palier (competence*)>
+<!ATTLIST palier
+	name CDATA #REQUIRED
+	code CDATA #REQUIRED
+>
+<!ELEMENT competence (competence*)>
+<!ATTLIST competence
+	name CDATA #REQUIRED
+	code CDATA #REQUIRED
+>

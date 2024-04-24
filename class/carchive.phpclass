@@ -1,0 +1,141 @@
+<?
+
+/*
+CREATE TABLE `t_archives` (
+	id int(11) NOT NULL auto_increment,
+	description TEXT,
+	type varchar(10) not null,
+	userid int NOT NULL,
+	date_creation datetime,
+	PRIMARY KEY (id),
+	CONSTRAINT  FOREIGN KEY (eleve) REFERENCES `t_users` (`id`) ON DELETE RESTRICT
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+*/
+
+class CArchive
+{
+	var $id; // database unique id
+	var $userid; // classe id
+	var $type; // type d'archive
+	var $date_creation; // date of o
+	var $description; // content description
+	var $data; // data
+	
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CArchive::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($u = CUser::user())
+		{
+			$q = sprintf("SELECT id,userid,type,date_creation,description FROM t_archives WHERE  userid=%s AND id = %s",
+																$DB->ID($u->id),
+																$DB->ID($id));
+			$r = CArchive::objectsWithQuery($q);
+			if (count($r) == 1) return $r[0];
+		}
+		return null;
+	}
+	
+	function objectWithArray(&$arr)
+	{
+		$u = new CArchive();
+		$u->initWithArray($arr);
+		return $u;
+	}
+		
+	function objectsWithUser($user_id, $kind = "")
+	{
+		$q = "SELECT * FROM t_archives WHERE  userid=$user_id ";
+		if ($kind) $q .= " AND kind = '$kind' ";
+		$q .= " ORDER BY date_creation desc";
+		return CArchive::objectsWithQuery($q);
+	}
+	function lightObjectsWithUser($user_id, $kind = "")
+	{
+		$q = "SELECT id,userid,type,date_creation,description FROM t_archives WHERE  userid=$user_id ";
+		if ($kind) $q .= " AND type = '$kind' ";
+		$q .= " ORDER BY date_creation desc";
+		return CArchive::objectsWithQuery($q);
+	}
+	
+	function createForUserKindDescriptionData($user_id,$kind,$description,$data)
+	{
+		$o = new CArchive();
+		$o->userid = $user_id;
+		$o->kind = $kind;
+		$o->description = $description;
+		$o->data = $data;
+		$o->date_creation = strtotime("now");
+		if ($o->create()) return $o;
+		else return null;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("userid",$arr))
+			$this->userid = $arr["userid"];
+
+		if (array_key_exists("type",$arr))
+			$this->type = $arr["type"];
+
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+	
+		if (array_key_exists("data",$arr))
+			$this->data = CDatabase::UNBLOB($arr["data"]);
+
+		if (array_key_exists("date_creation",$arr))
+			$this->date_creation = strtotime($arr["date_creation"]);
+	}
+	
+	function create()
+	{
+		global $DB;
+		$query = sprintf("INSERT INTO t_archives (userid,type,description,data,date_creation) VALUES (%s,%s,%s,%s,NOW())",
+								$DB->ID($this->userid),
+								$DB->STRING($this->kind),
+								$DB->STRING($this->description),
+								$DB->BLOB($this->data));
+		$rs = $DB->query($query);
+		if ($rs)
+		{
+			$this->id = $DB->getLastID();
+			return true;
+		}
+		return false;
+	}
+
+	function description() { return $this->description; }
+
+	function date($fmt="%d/%m/%Y %H:%M") {
+		if ($this->date_creation) return strftime($fmt,$this->date_creation);
+		return "";
+	}
+	function data()
+	{
+		global $DB;
+		$q = sprintf("SELECT data FROM t_archives WHERE id = %s ", $this->id);
+		return $DB->UNBLOB($DB->oneValue($q));
+	}
+	
+}

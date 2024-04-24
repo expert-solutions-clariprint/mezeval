@@ -1,0 +1,42 @@
+8
+
+dir
+1
+http://svnnotes.poetex.com/app/config
+http://svnnotes.poetex.com
+
+
+
+2008-06-09T15:37:05.898829Z
+1
+x.pechoultres@acquimetre.fr
+
+
+svn:special svn:externals svn:needs-lock
+
+tickets.conf
+file
+
+
+
+
+2008-06-09T14:38:55.000000Z
+a1d03d647f21df06151ce5355aeed221
+2008-06-09T15:37:05.898829Z
+1
+x.pechoultres@acquimetre.fr
+has-props
+
+config.inc
+file
+
+
+
+
+2008-06-09T14:38:55.000000Z
+e2276db46523c7be841a166d56667559
+2008-06-09T15:37:05.898829Z
+1
+x.pechoultres@acquimetre.fr
+has-props
+

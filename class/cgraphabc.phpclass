@@ -1,0 +1,560 @@
+<?
+
+class CGraphABC
+{
+	var $width = 100;
+	var $height = 20;
+	var $n_cols = 4;
+	
+	var $txt = '';
+	
+	var $acolor = "#00FF00";
+	var $bcolor = "#FFFF60";
+	var $ccolor = "#FF8010";
+	var $zcolor = "#F0F0F0";
+	var $bgcolor = "#FFFFFF";
+	var $a = 0;
+	var $b = 0;
+	var $c = 0;
+	var $x = 0;
+	
+	var $mode = "HORIZONTAL";
+
+	var $img = null;
+	
+	var $axes_font = "Verdana.tff";
+	var $axes_font_size = 0;
+	var $axes_width = 1;
+	var $axes_color = "#F0F0F0";
+	
+	var $bar_border_color = "#909090";
+	var $bar_border_width = 1;
+	var $bar_separation = 2;
+	var $bar_font = "Verdana.ttf";
+	var $bar_font_size = 8;
+	var $bar_font_color = "#000000";
+	
+	var $fity_bar_width = 1;
+	var $fity_bar_color = "#F0F0F0";
+	
+	var $border_width = 1;
+	var $border_color = "#A0A0A0";
+	
+	function setColorFromString($str)
+	{
+		$r = hexdec(substr($str,-6,2));
+		$v = hexdec(substr($str,-4,2));
+		$b = hexdec(substr($str,-2,2));
+		return imagecolorallocate($this->img, $r, $v, $b);
+	}
+	
+	function total()
+	{
+		return $this->a + $this->b + $this->c + $this->x;
+	}
+
+	function parseGetParameters()
+	{
+		if ($_GET["a"]) $this->a = (int)$_GET["a"];
+		if ($_GET["b"]) $this->b = (int)$_GET["b"];
+		if ($_GET["c"]) $this->c = (int)$_GET["c"];
+		if ($_GET["z"]) $this->x = (int)$_GET["z"];
+		if ($_GET["x"]) $this->x = (int)$_GET["x"];
+
+		if ($_GET["a_color"]) $this->acolor = $_GET["a_color"];
+		if ($_GET["b_color"]) $this->bcolor = $_GET["b_color"];
+		if ($_GET["c_color"]) $this->ccolor = $_GET["c_color"];
+		if ($_GET["z_color"]) $this->zcolor = $_GET["z_color"];
+
+		if ($_GET["width"]) $this->width = (int)$_GET["width"];
+		if ($_GET["height"]) $this->height = (int)$_GET["height"];
+
+		if ($_GET["mode"]) $this->mode = $_GET["mode"];
+
+		if ($_GET["fity_bar_color"]) $this->fity_bar_color = $_GET["fity_bar_color"];
+
+		if ($_GET["text"]) $this->text = $_GET["text"];
+		
+		if ($_GET["values"]) 
+		{
+			$this->values = $_GET["values"];
+			$this->a = substr_count($this->values,"a");
+			$this->b = substr_count($this->values,"b");
+			$this->c = substr_count($this->values,"c");
+			$this->x = substr_count($this->values,"x");
+		}
+		
+		if ($_GET["bar_border_width"]) $this->bar_border_width = (int)$_GET["bar_border_width"];
+		if (isset($_GET["border_width"])) $this->border_width = (int)$_GET["border_width"];
+		
+	}
+	
+	function init()
+	{
+		$this->parseGetParameters();
+		$this->initImage();
+	}
+	function initImage()
+	{
+		$this->img = & imagecreate($this->width,$this->height);
+		$this->setColorFromString($this->bgcolor);
+	}
+	
+	function draw()
+	{
+		switch ($this->mode)
+		{
+			case "HINDEPENDENT":
+				return $this->drawHorizontalIndependant();
+			case "VERTICAL":
+				return $this->drawVertical();
+			case "VERTICALCUMUL":
+				return $this->drawVerticalCumul();
+			case "HVALUES":
+				return $this->drawHorizontalValues();
+			default:
+				return $this->drawHorizontal();
+		}
+	}
+
+	function drawBorders()
+	{
+		if ($this->border_width == 1)
+		{
+			$c =  $this->setColorFromString($this->border_color);
+			imagerectangle($this->img,
+						0,
+						0,
+						$this->width -1,
+						$this->height - 1,
+						$c);
+		}
+		
+	}
+
+	function drawVerticalBar($val,$index,$color,$show_txt = true)
+	{
+		$left = ($index * $this->width / $this->n_cols) + $this->bar_separation;
+		$width = $this->width / $this->n_cols - (2 * $this->bar_separation);
+		$tot = $this->total();
+
+		$height = $val * $this->height / $tot;
+		$top = $this->height - $height;
+
+		$c = $this->setColorFromString($color);
+		imagefilledrectangle($this->img,
+							$left,
+							$top,
+							$left + $width,
+							$this->height - 1,
+							$c);
+		if ($this->bar_border_width)
+		{
+			$c =  $this->setColorFromString($this->bar_border_color);
+			imagerectangle($this->img,
+						$left,
+						$top,
+						$left+$width,
+						$this->height - 1,
+						$c);
+		}
+		if ($this->bar_font_size && $show_txt)
+		{
+			$font_file = FONTS_PATH . "/". $this->bar_font;
+			
+			if (is_file($font_file))
+			{
+				$c = $this->setColorFromString($this->bar_font_color);
+				$percent = 100 * $val / $tot;
+				$txt = sprintf('%.1f %%',$percent);
+
+//				$box = imageftbbox($this->bar_font_size,0,$font_file,$txt);
+				$box = imagettfbbox($this->bar_font_size,0,$font_file,$txt);
+
+				if ($top < 10) $ftop = 20;
+				else $ftop = $top - 3 ;
+				$txtleft = $left + ($width - $box[2]) / 2;
+
+				imagefttext($this->img,
+							$this->bar_font_size, // size
+							0, // angle
+							$txtleft,
+							$ftop, 
+							$c,
+							$font_file,
+							$txt);
+				
+			} else CDebug::TRACE(0,"ATTENTION : $font_file is not a file");
+		}
+	}
+
+
+	function drawVerticalBarCumul($values,$index)
+	{
+		$left = ($index * $this->width / 2) + $this->bar_separation;
+		$width = $this->width / 2 - (2 * $this->bar_separation);
+		$tot = $this->total();
+		$top = $this->height;
+		$ltot = 0;
+		foreach($values as $val)
+		{
+			$ltot += $val[0];
+		}
+		$tot_height = $ltot * $this->height / $tot;
+		$bartop = $this->height - $tot_height;
+		$top = $bartop;
+		foreach($values as $val_ar)
+		{
+			$c = $val_ar[1];
+			$val =  $val_ar[0];
+			$height = $val * $this->height / $tot;
+			imagefilledrectangle($this->img,
+								$left,
+								$top,
+								$left + $width,
+								$this->height - $top - 1,
+								$c);
+			$top =+ $height;
+				
+		}
+		$top = $bartop;
+		
+		
+//		$height = $val * $this->height / $tot;
+//		$top = $this->height - $height;
+		
+/*
+		$c = $this->setColorFromString($color);
+		if ($this->bar_border_width)
+		{
+			$c =  $this->setColorFromString($this->bar_border_color);
+			imagerectangle($this->img,
+						$left,
+						$top,
+						$left+$width,
+						$this->height - 1,
+						$c);
+		} */
+		if ($this->bar_font_size)
+		{
+			$font_file = FONTS_PATH . "/". $this->bar_font;
+			
+			if (is_file($font_file))
+			{
+				$c = $this->setColorFromString($this->bar_font_color);
+				$percent = 100 * $val / $tot;
+				$txt = sprintf('%.1f %%',$percent);
+
+				$box = imageftbbox($this->bar_font_size,0,$font_file,$txt);
+
+				if ($top < 10) $ftop = 20;
+				else $ftop = $top - 3 ;
+				$txtleft = $left + ($width - $box[2]) / 2;
+
+				imagefttext($this->img,
+							$this->bar_font_size, // size
+							0, // angle
+							$txtleft,
+							$ftop, 
+							$c,
+							$font_file,
+							$txt);
+				
+			} else CDebug::TRACE(0,"ATTENTION : $font_file is not a file");
+		}
+	}
+
+	function drawVerticalAxes()
+	{
+		if ($this->axes_width)
+		{
+			$c = $this->setColorFromString($this->axes_color);
+			imageline($this->img,
+					0,
+					$this->height - 1,
+					$this->width,
+					$this->height - 1,
+					$c );
+			imageline($this->img,
+					0,
+					0,
+					0,
+					$this->height ,
+					$c );
+		}
+	}
+	
+	function drawVerticalBackground()
+	{
+		if ($this->axes_width)
+		{
+			$c = $this->setColorFromString($this->axes_color);
+			imageline($this->img,
+					0,
+					$this->height / 2,
+					$this->width,
+					$this->height / 2,
+					$c );
+			imageline($this->img,
+					0,
+					$this->height / 4,
+					$this->width,
+					$this->height / 4,
+					$c );
+			imageline($this->img,
+					0,
+					3 * $this->height / 4,
+					$this->width,
+					3 * $this->height / 4,
+					$c );
+		}
+	}
+	
+	function drawVertical()
+	{
+		$this->drawVerticalBackground();
+		$tot = $this->total();
+		if ($tot > 0)
+		{
+			$this->drawVerticalBar($this->a,0,$this->acolor);
+			$this->drawVerticalBar($this->b,1,$this->bcolor);
+			$this->drawVerticalBar($this->c,2,$this->ccolor);
+			$this->drawVerticalBar($this->x,3,$this->zcolor);
+		}
+		$this->drawVerticalAxes();
+	}
+
+	function drawVerticalCumul()
+	{
+		$this->drawVerticalBackground();
+		$tot = $this->total();
+		$this->n_cols = 2;
+		if ($tot > 0)
+		{
+			$this->drawVerticalBar($this->a + $this->b,0,$this->acolor);
+			$this->drawVerticalBar($this->b,0,$this->bcolor,false);
+			$this->drawVerticalBar($this->c + $this->x,1,$this->ccolor);
+			$this->drawVerticalBar($this->x,1,$this->zcolor,false);
+		}
+		$this->drawVerticalAxes();
+	}
+
+
+
+
+	
+	function drawHorizontalRules()
+	{
+		$c = $this->setColorFromString($this->fity_bar_color);
+		imageline($this->img,	$this->width / 4, 0,
+								$this->width / 4, $this->height / 4,$c);
+
+		imageline($this->img,	3 * $this->width / 4, 0,
+								3 * $this->width / 4, $this->height / 4,$c);
+
+		imageline($this->img, 	$this->width / 2, $this->height,
+								$this->width / 2, 2 * $this->height / 3,$c);
+
+	}
+	function drawHorizontal()
+	{
+		
+		$tot  = $this->total();
+		if ($tot > 0)
+		{
+			$width = $this->a * $this->width / $tot;
+			$left = 0;
+			$c = $this->setColorFromString($this->acolor);
+			if ($this->a > 0)
+				imagefilledrectangle($this->img,$left,$top,$left + $width,$this->height,$c);
+			$left += $width;
+
+			$width = $this->b * $this->width / $tot;
+			$c = $this->setColorFromString($this->bcolor);
+			if ($this->b > 0)
+				imagefilledrectangle($this->img,$left,$top,$left+ $width,$this->height,$c);
+			$left += $width;
+			
+			$width = $this->c * $this->width / $tot;
+			$c = $this->setColorFromString($this->ccolor);
+			if ($this->c > 0)
+				imagefilledrectangle($this->img,$left,$top,$left + $width,$this->height,$c);
+			$left += $width;
+			
+			$width = $this->x * $this->width / $tot;
+			$c = $this->setColorFromString($this->zcolor);
+			if ($this->x > 0)
+			imagefilledrectangle($this->img,$left,$top,$left+$width,$this->height,$c);
+			$left += $width;
+		}
+		$this->drawHorizontalRules();
+		$this->drawBorders();
+		$this->drawHorizontalText();
+	}
+	
+	function drawHorizontalText()
+	{
+		if ($txt = $this->text)
+		{
+			$font_file = FONTS_PATH . "/". $this->bar_font;
+			
+			if (is_file($font_file))
+			{
+				$box = imageftbbox($this->bar_font_size,0,$font_file,$txt);
+				$left = 0 + ($this->width - $box[2]) / 2;
+				$top = 0 + ($this->height - $box[0]) / 2;
+				$c = $this->setColorFromString("000000");
+				imagefttext($this->img,
+							$this->bar_font_size, // size
+							0, // angle
+							$left,
+							$top, 
+							$c,
+							$font_file,
+							$txt);
+				}
+			
+		}
+		
+	}
+	
+	function drawHorizontalIndependantBar($value,$index,$color)
+	{
+		$bwidth=$this->width / 4;
+		$width = $bwidth * $value / $this->total();
+		$left = $bwidth * $index;
+		if ($value)
+		{
+			$c = $this->setColorFromString($color);
+			imagefilledrectangle($this->img,$left,0,$left+$width,$this->height,$c);
+		}
+		if ($this->fity_bar_width)
+		{
+			$c =  $this->setColorFromString($this->fity_bar_color);
+			imageline($this->img,
+						$left + $bwidth / 2,
+						2 * $this->height / 3,
+						$left + $bwidth / 2,
+						$this->height,
+						$c
+						);
+		}
+		if ($this->bar_border_width)
+		{
+			$c =  $this->setColorFromString($this->bar_border_color);
+			imagerectangle($this->img,
+						$left,
+						0,
+						$left+$bwidth - 1,
+						$this->height - 1,
+						$c);
+		}
+		if ($this->bar_font_size)
+		{
+			$font_file = FONTS_PATH . "/". $this->bar_font;
+			
+			if (is_file($font_file))
+			{
+				$c = $this->setColorFromString($this->bar_font_color);
+				$percent = 100 * $value / $this->total();
+				$txt = sprintf('%.1f %%',$percent);
+
+				$box = imageftbbox($this->bar_font_size,0,$font_file,$txt);
+				
+				$txttop = ($this->height - $box[5]) / 2;
+				if ($top < 10) $ftop = 20;
+				else $ftop = $top - 3 ;
+				$txtleft = $left + ($bwidth - $box[2]) / 2;
+
+				imagefttext($this->img,
+							$this->bar_font_size, // size
+							0, // angle
+							$txtleft,
+							$txttop, 
+							$c,
+							$font_file,
+							$txt);
+				
+			} else CDebug::TRACE(0,"ATTENTION : $font_file is not a file");
+			
+		}
+
+	}
+	function drawHorizontalIndependant()
+	{
+		$tot  = $this->total();
+		if ($tot > 0)
+		{
+			$this->drawHorizontalIndependantBar($this->a,0,$this->acolor);
+			$this->drawHorizontalIndependantBar($this->b,1,$this->bcolor);
+			$this->drawHorizontalIndependantBar($this->c,2,$this->ccolor);
+			$this->drawHorizontalIndependantBar($this->x,3,$this->zcolor);
+		}	
+		
+	}
+	
+	function colorForValue($val)
+	{
+		switch($val)
+		{
+			case "a":
+				return $this->acolor;
+			case "b":
+				return $this->bcolor;
+			case "c":
+				return $this->ccolor;
+			case "x":
+				return $this->zcolor;
+		}
+		CDebug::TRACE(0,"?????????");
+		return "#FFFFFF";
+	}
+	function getColorForValue($val)
+	{
+		return $this->setColorFromString($this->colorForValue($val));
+	}
+	function drawHorizontalValues()
+	{
+		$tot  = $this->total();
+		if ($tot > 0)
+		{
+			$item_width = $this->width / $tot;
+			$n = strlen($this->values);
+			for($i=0;$i < $n;$i++)
+			{
+				$left = $i * $item_width;
+				$val = $this->values[$i];
+				$c = $this->getColorForValue($val);
+				imagefilledrectangle($this->img,$left,0,$left+$item_width,$this->height,$c);
+			}
+		}
+	}
+
+	function png()
+	{
+		header("Content-type: image/png");
+		imagepng($this->img);
+	}
+	function pngfile()
+	{
+		if ($tmp = (tempnam(sys_get_temp_dir(),"MZ") . ".png")) {
+			if (imagepng($this->img,$tmp)) return $tmp; }
+		return false;
+	}
+	function file()
+	{
+		return $this->pngfile();
+	}
+	function jpegfile($qual=90)
+	{
+		if ($tmp = (tempnam(sys_get_temp_dir(),"MZ") . ".jpeg")) {
+			if (imagejpeg($this->img,$tmp,$qual)) return $tmp; }
+		return false;
+	}
+	
+	
+	function reset()
+	{
+		imagedestroy($this->img);
+	}
+}

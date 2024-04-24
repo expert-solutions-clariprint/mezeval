@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding="UTF-8"?>
+<!DOCTYPE palier SYSTEM "http://local.mezeval.fr/dtds/socle.dtd">
+<palier name="PALIER 2 CM2" code="P2" type="socle">
+	<competence code="P2.LF" name="La maîtrise de la langue française">
+		<competence code="P2.LF.DIRE" name="DIRE">
+			<competence code="P2.LF.DIRE.1" name="S’exprimer à l’oral comme à l’écrit dans un vocabulaire approprié et précis"/>
+			<competence code="P2.LF.DIRE.2" name="Prendre la parole en respectant le niveau de langue adapté"/>
+			<competence code="P2.LF.DIRE.3" name="Répondre à une question par une phrase complète à l’oral"/>
+			<competence code="P2.LF.DIRE.4" name="Prendre part à un dialogue : prendre la parole devant les autres, écouter autrui, formuler et justifier un point de vue"/>
+			<competence code="P2.LF.DIRE.5" name="Dire de mémoire, de façon expressive une dizaine de poèmes et de textes en prose"/>
+		</competence>
+		<competence code="P2.LF.LIRE" name="LIRE">
+			<competence code="P2.LF.LIRE.1" name="Lire avec aisance, (à haute voix, silencieusement) un texte"/>
+			<competence code="P2.LF.LIRE.2" name="Lire seul des textes du patrimoine et des œuvres intégrales de la littérature de jeunesse, adaptés à son âge"/>
+			<competence code="P2.LF.LIRE.3" name="Lire seul et comprendre un énoncé, une consigne"/>
+			<competence code="P2.LF.LIRE.4" name="Dégager le thème d’un texte"/>
+			<competence code="P2.LF.LIRE.5" name="Repérer dans un texte des informations explicites"/>
+			<competence code="P2.LF.LIRE.6" name="Inférer des informations nouvelles (implicites)"/>
+			<competence code="P2.LF.LIRE.7" name="Repérer les effets de choix formels (emploi de certains mots, utilisation d’un niveau de langue)"/>
+			<competence code="P2.LF.LIRE.8" name="Utiliser ses connaissances pour réfléchir sur un texte, mieux le comprendre"/>
+			<competence code="P2.LF.LIRE.9" name="Effectuer, seul, des recherches dans des ouvrages documentaires (livres, produits multimédia)"/>
+			<competence code="P2.LF.LIRE.10" name="Se repérer dans une bibliothèque, une médiathèque"/>
+		</competence>
+		<competence code="P2.LF.ECRIRE" name="ÉCRIRE">
+			<competence code="P2.LF.ECRIRE.1" name="Copier sans erreur un texte d’au moins quinze lignes en lui donnant une présentation adaptée"/>
+			<competence code="P2.LF.ECRIRE.2" name="Utiliser ses connaissances pour réfléchir sur un texte, mieux l’écrire"/>
+			<competence code="P2.LF.ECRIRE.3" name="Répondre à une question par une phrase complète à l’écrit"/>
+			<competence code="P2.LF.ECRIRE.4" name="Rédiger un texte d’une quinzaine de lignes (récit, description, dialogue, texte poétique, compte rendu) en utilisant ses connaissances en vocabulaire et en grammaire"/>
+		</competence>
+		<competence code="P2.LF.VOCABULAIRE" name="ÉTUDE DE LA LANGUE : VOCABULAIRE">
+			<competence code="P2.LF.VOCABULAIRE.1" name="Comprendre des mots nouveaux et les utiliser à bon escient"/>
+			<competence code="P2.LF.VOCABULAIRE.2" name="Maîtriser quelques relations de sens entre les mots"/>
+			<competence code="P2.LF.VOCABULAIRE.3" name="Maîtriser quelques relations concernant la forme et le sens des mots"/>
+			<competence code="P2.LF.VOCABULAIRE.4" name="Savoir utiliser un dictionnaire papier ou numérique"/>
+		</competence>
+		<competence code="P2.LF.GRAMMAIRE" name="ÉTUDE DE LA LANGUE : GRAMMAIRE">
+			<competence code="P2.LF.GRAMMAIRE.1" name="Distinguer les mots selon leur nature"/>
+			<competence code="P2.LF.GRAMMAIRE.2" name="Identifier les fonctions des mots dans la phrase"/>
+			<competence code="P2.LF.GRAMMAIRE.3" name="Conjuguer les verbes, utiliser les temps à bon escient"/>
+		</competence>
+		<competence code="P2.LF.ORTHOGRAPHE" name="ÉTUDE DE LA LANGUE : ORTHOGRAPHE">
+			<competence code="P2.LF.ORTHOGRAPHE.1" name="Maîtriser l’orthographe grammaticale"/>
+			<competence code="P2.LF.ORTHOGRAPHE.2" name="Maîtriser l’orthographe lexicale"/>
+			<competence code="P2.LF.ORTHOGRAPHE.3" name="Orthographier correctement un texte simple de dix lignes – lors de sa rédaction ou de sa dictée – en se référant aux règles connues d’orthographe et de grammaire ainsi qu’à la connaissance du vocabulaire"/>
+		</competence>
+	</competence>
+	<competence code="P2.LE" name="La pratique d’une langue vivante étrangère">
+		<competence code="P2.LE.DIALOGUER" name="RÉAGIR ET DIALOGUER"> 
+			<competence code="P2.LE.DIALOGUER.1" name="Communiquer, au besoin avec des pauses pour chercher ses mots"/>
+			<competence code="P2.LE.DIALOGUER.2" name="Se présenter ; présenter quelqu’un ; demander à quelqu’un de ses nouvelles en utilisant les formes de politesse les plus élémentaires ; accueil et prise de congé"/>
+			<competence code="P2.LE.DIALOGUER.3" name="Répondre à des questions et en poser (sujets familiers ou besoins immédiats)"/>
+			<competence code="P2.LE.DIALOGUER.4" name="Épeler des mots familiers"/>
+		</competence>
+		<competence code="P2.LE.COMPRENDRE" name="COMPRENDRE À L’ORAL">
+			<competence code="P2.LE.ORAL.1" name="Comprendre les consignes de classe"/>
+			<competence code="P2.LE.ORAL.2" name="Comprendre des mots familiers et des expressions très courantes"/>
+			<competence code="P2.LE.ORAL.3" name="Suivre des instructions courtes et simples"/>
+		</competence>
+		<competence code="P2.LE.PARLER" name="PARLER EN CONTINU">
+			<competence code="P2.LE.PARLER.1" name="Reproduire un modèle oral"/>
+			<competence code="P2.LE.PARLER.2" name="Utiliser des expressions et des phrases proches des modèles rencontrés lors des apprentissages"/>
+			<competence code="P2.LE.PARLER.3" name="Lire à haute voix et de manière expressive un texte bref après répétition"/>
+		</competence>
+		<competence code="P2.LE.LIRE" name="LIRE">
+			<competence code="P2.LE.LIRE.1" name="Comprendre des textes courts et simples en s’appuyant sur des éléments connus (indications, informations)"/>
+			<competence code="P2.LE.LIRE.2" name="Se faire une idée du contenu d’un texte informatif simple, accompagné éventuellement d’un document visuel"/>
+		</competence>
+		<competence code="P2.LE.ECRIRE" name="ÉCRIRE">
+			<competence code="P2.LE.ECRIRE.1" name="Copier des mots isolés et des textes courts"/>
+			<competence code="P2.LE.ECRIRE.2" name="Écrire un message électronique simple ou une courte carte postale en référence à des modèles"/>
+			<competence code="P2.LE.ECRIRE.3" name="Renseigner un questionnaire"/>
+			<competence code="P2.LE.ECRIRE.4" name="Produire de manière autonome quelques phrases"/>
+			<competence code="P2.LE.ECRIRE.5" name="Écrire sous la dictée des expressions connues"/>
+		</competence>
+	</competence>
+	<competence code="P2.MATH" name="Les principaux éléments de mathématiques">
+		<competence code="P2.MATH.CALCUL" name="NOMBRES ET CALCUL">
+			<competence code="P2.MATH.CALCUL.1" name="Ecrire, nommer, comparer et utiliser les nombres entiers, les nombres décimaux (jusqu’au centième) et quelques fractions simples"/>
+			<competence code="P2.MATH.CALCUL.2" name="Restituer les tables d’addition et de multiplication de 2 à 9"/>
+			<competence code="P2.MATH.CALCUL.3" name="Utiliser les techniques opératoires des quatre opérations sur les nombres entiers et décimaux (pour la division, le diviseur est un nombre entier)"/>
+			<competence code="P2.MATH.CALCUL.4" name="Ajouter deux fractions décimales ou deux fractions simples de même dénominateur"/>
+			<competence code="P2.MATH.CALCUL.5" name="Calculer mentalement en utilisant les quatre opérations"/>
+			<competence code="P2.MATH.CALCUL.6" name="Estimer l’ordre de grandeur d’un résultat"/>
+			<competence code="P2.MATH.CALCUL.7" name="Résoudre des problèmes relevant des quatre opérations"/>
+			<competence code="P2.MATH.CALCUL.8" name="Utiliser une calculatrice"/>
+		</competence>
+		<competence code="P2.MATH.GEO" name="GÉOMÉTRIE">
+			<competence code="P2.MATH.CALCUL.1" name="Reconnaître, décrire et nommer les figures et solides usuels"/>
+			<competence code="P2.MATH.CALCUL.2" name="Utiliser la règle, l’équerre et le compas pour vérifier la nature de figures planes usuelles et les construire avec soin et précision"/>
+			<competence code="P2.MATH.CALCUL.3" name="Percevoir et reconnaitre parallèles et perpendiculaires"/>
+			<competence code="P2.MATH.CALCUL.4" name="Résoudre des problèmes de reproduction, de construction"/>
+		</competence>
+		<competence code="P2.MATH.MES" name="GRANDEURS ET MESURES">
+			<competence code="P2.MATH.MES.1" name="Utiliser des instruments de mesure ; effectuer des conversions"/>
+			<competence code="P2.MATH.MES.2" name="Connaître et utiliser les formules du périmètre et de l’aire d’un carré, d’un rectangle et d’un triangle"/>
+			<competence code="P2.MATH.MES.3" name="Utiliser les unités de mesures usuelles"/>
+			<competence code="P2.MATH.MES.4" name="Résoudre des problèmes dont la résolution implique des conversions"/>
+		</competence>
+		<competence code="P2.MATH.ORG" name="ORGANISATION ET GESTION DE DONNÉES">
+			<competence code="P2.MATH.MES.1" name="Lire, interpréter et construire quelques représentations simples : tableaux, graphiques"/>
+			<competence code="P2.MATH.MES.2" name="Savoir organiser des informations numériques ou géométriques, justifier et apprécier la vraisemblance d’un résultat"/>
+			<competence code="P2.MATH.MES.3" name="Résoudre un problème mettant en jeu une situation de proportionnalité"/>
+		</competence>
+	</competence>
+	<competence code="P2.SCI" name="La culture scientifique et technologique">
+		<competence code="P2.SCI.DEMARCHE" name="PRATIQUER UNE DÉMARCHE SCIENTIFIQUE OU TECHNOLOGIQUE">
+			<competence code="P2.SCI.DEMARCHE.1" name="Pratiquer une démarche d’investigation : savoir observer, questionner"/>
+			<competence code="P2.SCI.DEMARCHE.2" name="Manipuler et expérimenter, formuler une hypothèse et la tester, argumenter, mettre à l’essai plusieurs pistes de solutions"/>
+			<competence code="P2.SCI.DEMARCHE.3" name="Exprimer et exploiter les résultats d’une mesure et d’une recherche en utilisant un vocabulaire scientifique à l’écrit ou à l’oral"/>
+		</competence>
+		<competence code="P2.SCI.MAITRISE" name="MAÎTRISER DES CONNAISSANCES DANS DIVERS DOMAINES SCIENTIFIQUES ET LES MOBILISER DANS DES CONTEXTES SCIENTIFIQUES DIFFÉRENTS ET DANS DES ACTIVITÉS DE LA VIE COURANTE">
+			<competence code="P2.SCI.MAITRISE.1" name="Le ciel et la Terre"/>
+			<competence code="P2.SCI.MAITRISE.2" name="La matière"/>
+			<competence code="P2.SCI.MAITRISE.3" name="L’énergie"/>
+			<competence code="P2.SCI.MAITRISE.4" name="L’unité et la diversité du vivant"/>
+			<competence code="P2.SCI.MAITRISE.5" name="Le fonctionnement du vivant"/>
+			<competence code="P2.SCI.MAITRISE.6" name="Le fonctionnement du corps humain et la santé"/>
+			<competence code="P2.SCI.MAITRISE.7" name="Les êtres vivants dans leur environnement"/>
+			<competence code="P2.SCI.MAITRISE.8" name="Les objets techniques"/>
+		</competence>
+		<competence code="P2.SCI.DURABLE" name="MOBILISER SES CONNAISSANCES POUR COMPRENDRE QUELQUES QUESTIONS LIÉES À L’ENVIRONNEMENT ET AU DÉVELOPPEMENT DURABLE ET AGIR EN CONSÉQUENCE"/>
+	</competence>
+	<competence code="P2.INFO" name="La maîtrise des techniques usuelles de l'information et de la communication. Brevet informatique et internet : niveau école">
+		<competence code="P2.INFO.ENVIRONNEMENT" name="S’APPROPRIER UN ENVIRONNEMENT INFORMATIQUE DE TRAVAIL">
+			<competence code="P2.INFO.ENVIRONNEMENT.1" name="Connaitre et maîtriser les fonctions de base d’un ordinateur et de ses périphériques : fonction des différents éléments, utilisation de la souris"/>
+		</competence>
+		<competence code="P2.INFO.ATTITUDE" name="ADOPTER UNE ATTITUDE RESPONSABLE">
+			<competence code="P2.INFO.ATTITUDE.1" name="Prendre conscience des enjeux citoyens de l’usage de l’informatique et de l’internet et adopter une attitude critique face aux résultats obtenus"/>
+		</competence>
+		<competence code="P2.INFO.UTILISER" name="CRÉER, PRODUIRE, TRAITER, EXPLOITER DES DONNÉES">
+			<competence code="P2.INFO.UTILISER.1" name="Produire un document numérique : texte, image, son"/>
+			<competence code="P2.INFO.UTILISER.2" name="Utiliser l’outil informatique pour présenter un travail"/>
+		</competence>
+		<competence code="P2.INFO.DOC" name="S’INFORMER, SE DOCUMENTER">
+			<competence code="P2.INFO.DOC.1" name="Lire un document numérique"/>
+			<competence code="P2.INFO.DOC.2" name="Chercher des informations par voie électronique"/>
+			<competence code="P2.INFO.DOC.4" name="Découvrir les richesses et les limites des ressources de l’internet"/>
+		</competence>
+		<competence code="P2.INFO.COM" name="COMMUNIQUER, ÉCHANGER">
+			<competence code="P2.INFO.COM.1" name="Echanger avec les technologies de l’information et de la communication"/>
+		</competence>
+	</competence>
+	<competence code="P2.CULTURE" name="La culture humaniste">
+		<competence code="P2.CULTURE.HISTGEO" name="AVOIR DES REPÈRES EN HISTOIRE ET EN GÉOGRAPHIE">
+			<competence code="P2.CULTURE.HISTGEO.1" name="Lire et utiliser différents langages : textes, cartes, croquis, graphiques"/>
+			<competence code="P2.CULTURE.HISTGEO.2" name="Identifier les périodes de l’histoire au programme"/>
+			<competence code="P2.CULTURE.HISTGEO.3" name="Connaître et mémoriser les principaux repères chronologiques (évènements et personnages)"/>
+			<competence code="P2.CULTURE.HISTGEO.4" name="Connaître les principaux caractères géographiques physiques et humains de la région où vit l’élève, de la France et de l’Union Européenne, les repérer sur des cartes à différentes échelles"/>
+			<competence code="P2.CULTURE.HISTGEO.5" name="Comprendre une ou deux questions liées au développement durable et agir en conséquence (l’eau dans la commune, la réduction et le recyclage des déchets)"/>
+		</competence>
+		<competence code="P2.CULTURE.LIT" name="AVOIR DES REPÈRES LITTÉRAIRES">
+			<competence code="P2.CULTURE.LIT.1" name="Lire des œuvres majeures du patrimoine et de la littérature pour la jeunesse"/>
+			<competence code="P2.CULTURE.LIT.2" name="Établir des liens entre les textes lus"/>
+		</competence>
+		<competence code="P2.CULTURE.ARTS" name="PRATIQUER LES ARTS ET AVOIR DES REPÈRES EN HISTOIRE DES ARTS">
+			<competence code="P2.CULTURE.ARTS.1" name="Distinguer les grandes catégories de la création artistique (littérature, musique, danse, théâtre, cinéma, dessin, peinture, sculpture, architecture)"/>
+			<competence code="P2.CULTURE.ARTS.2" name="Reconnaître et décrire des œuvres préalablement étudiées"/>
+			<competence code="P2.CULTURE.ARTS.3" name="Pratiquer le dessin et diverses formes d’expressions visuelles et plastiques"/>
+			<competence code="P2.CULTURE.ARTS.4" name="Interpréter de mémoire une chanson, participer à un jeu rythmique ; repérer des éléments musicaux caractéristiques, simples"/>
+			<competence code="P2.CULTURE.ARTS.5" name="Inventer et réaliser des textes, des œuvres plastiques, des chorégraphies ou des enchaînements, à visée artistique ou expressive"/>
+		</competence>
+	</competence>
+	<competence code="P2.CIV" name="Les compétences sociales et civiques">
+		<competence code="P2.CIV.FOND" name="CONNAÎTRE LES PRINCIPES ET FONDEMENTS DE LA VIE CIVIQUE ET SOCIALE">
+			<competence code="P2.CIV.FOND.1" name="Reconnaître les symboles de la république et de l’Union européenne"/>
+			<competence code="P2.CIV.FOND.2" name="Comprendre les notions de droits et de devoirs, les accepter et les mettre en application"/>
+			<competence code="P2.CIV.FOND.3" name="Avoir conscience de la dignité de la personne humaine et en tirer les conséquences au quotidien"/>
+		</competence>
+		<competence code="P2.CIV.RESP" name="AVOIR UN COMPORTEMENT RESPONSABLE">
+			<competence code="P2.CIV.FOND.1" name="Respecter les règles de la vie collective, notamment dans les pratiques sportives"/>
+			<competence code="P2.CIV.FOND.2" name="Respecter tous les autres, et notamment appliquer les principes de l’égalité des filles et des garçons"/>
+		</competence>
+	</competence>
+	<competence code="P2.AUTO" name="L'autonomie et l’initiative">
+		<competence code="P2.AUTO.METHODES" name="S’APPUYER SUR DES MÉTHODES DE TRAVAIL POUR ÊTRE AUTONOME">
+			<competence code="P2.AUTO.METHODES.1" name="Respecter des consignes simples, en autonomie"/>
+			<competence code="P2.AUTO.METHODES.2" name="Etre persévérant dans toutes les activités"/>
+			<competence code="P2.AUTO.METHODES.3" name="Commencer à savoir s’auto-évaluer dans des situations simples"/>
+			<competence code="P2.AUTO.METHODES.4" name="Soutenir une écoute prolongée (lecture, musique, spectacle, etc.)"/>
+		</competence>
+		<competence code="P2.AUTO.INITIATIVE" name="FAIRE PREUVE D’INITIATIVE">
+			<competence code="P2.AUTO.INITIATIVE.1" name="S’impliquer dans un projet individuel ou collectif"/>
+		</competence>
+		<competence code="P2.AUTO.SPORT" name="AVOIR UNE BONNE MAÎTRISE DE SON CORPS ET PRATIQUER UN SPORT">
+			<competence code="P2.AUTO.SPORT.1" name="Se respecter en respectant les principales règles d’hygiène de vie ; accomplir les gestes quotidiens sans risquer de se faire mal"/>
+			<competence code="P2.AUTO.SPORT.2" name="Réaliser une performance mesurée dans les activités athlétiques et en natation"/>
+			<competence code="P2.AUTO.SPORT.3" name="Se déplacer en s’adaptant à l’environnement"/>
+		</competence>
+	</competence>
+</palier>

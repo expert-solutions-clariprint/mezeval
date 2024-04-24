@@ -1,0 +1,114 @@
+<?
+/*
+CREATE TABLE `t_user_etablissement` (
+	user_id int,
+	etablissement_id int,
+	role varchar(10),
+	created datetime,
+	creator int,
+	unique (user_id,etablissement_id));
+*/		
+
+class CUserEtablissement
+{
+	var $user;
+	var $etablissement;
+	var $role;
+	var $created;
+	var $creator;
+	
+	
+	
+	/* class methods */
+	
+	function createWithUserEtablissement($user_id,$etablissement_id,$role="VISU")
+	{
+		$x = new CUserEtablissement();
+		$x->user = $user_id;
+		$x->etablissement = $etablissement_id;
+		$x->role = $role;
+		$x->created = date();
+		$x->creator;
+		$x->create();
+	}
+	
+	function deleteForUserEtablissement($user_id,$etablissement_id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_user_etablissement WHERE user_id=$user_id AND etablissement_id = $etablissement_id");
+	}
+	
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CUserEtablissement::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CUserEtablissement::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+			
+	function objectWithArray(&$arr)
+	{
+		$u = new CUserEtablissement();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CUserEtablissement::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("user",$arr))
+			$this->user = $arr["user_id"];
+		if (array_key_exists("etablissement_id",$arr))
+			$this->etablissement = $arr["etablissement_id"];
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("INSERT INTO t_user_etablissement (
+							user_id,etablissement_id,
+							creator,created) VALUES (
+							%s,%s,
+							%s,NOW())",
+							$DB->INT($this->user),$DB->INT($this->etablissement),
+							$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}			
+		}
+		return false;
+	}
+}

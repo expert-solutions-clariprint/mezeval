@@ -1,0 +1,86 @@
+﻿<?xml version='1.0' ?>
+<palier code="P2" name="DEUXIEME PALIER POUR LA MAITRISE DU SOCLE COMMUN" intitule_court="PALIER 2 CM2" annee="2008" description="COMPETENCES ATTENDUES A LA FIN DU CM2" NIVEAU="CM2" type="socle">
+	<competence code="LF.2" edu="1" name="LA MAÎTRISE DE LA LANGUE FRANÇAISE">
+		<competence code="LF.2.1" name="s’exprimer à l’oral comme à l’écrit dans un vocabulaire approprié et précis"/>
+		<competence code="LF.2.2" name="prendre la parole en respectant le niveau de langue adapté"/>
+		<competence code="LF.2.3" name="lire avec aisance (à haute voix, silencieusement) un texte"/>
+		<competence code="LF.2.4" name="lire seul des textes du patrimoine et des œuvres intégrales de la littérature de jeunesse, adaptés à son âge"/>
+		<competence code="LF.2.5" name="lire seul et comprendre un énoncé, une consigne"/>
+		<competence code="LF.2.6" name="comprendre des mots nouveaux et les utiliser à bon escient"/>
+		<competence code="LF.2.7" name="dégager le thème d’un texte"/>
+		<competence code="LF.2.8" name="utiliser ses connaissances pour réfléchir sur un texte (mieux le comprendre, ou mieux l’écrire)"/>
+		<competence code="LF.2.9" name="répondre à une question par une phrase complète à l’oral comme à l’écrit"/>
+		<competence code="LF.2.10" name="rédiger un texte d’une quinzaine de lignes (récit, description, dialogue, texte poétique, compte rendu) en utilisant leurs connaissances en vocabulaire et en grammaire"/>
+		<competence code="LF.2.11" name="orthographier correctement un texte simple de dix lignes - lors de sa rédaction ou de sa dictée - en se référant aux règles connues d’orthographe et de grammaire ainsi qu’à la connaissance du vocabulaire"/>
+		<competence code="LF.2.12" name="savoir utiliser un dictionnaire"/>
+ 	</competence>
+	<competence code="LE.2" edu="2" name="LA PRATIQUE D’UNE LANGUE VIVANTE ÉTRANGÈRE"> 
+		<competence code="LE.2.1" name="communiquer : se présenter, répondre à des questions et en poser"/>
+		<competence code="LE.2.2" name="comprendre des consignes, des mots familiers et des expressions très courantes"/>
+ 	</competence>
+	<competence code="MS.2" edu="3" name="LES PRINCIPAUX ÉLÉMENTS DE MATHÉMATIQUES ET LA CULTURE SCIENTIFIQUE ET TECHNOLOGIQUE"> 
+		<competence code="MS.2.M" edu="3.A" name="Les principaux éléments de mathématiques">
+			<competence code="MS.2.M.1" name="écrire, nommer, comparer et utiliser les nombres entiers, les nombres décimaux (jusqu’au centième) et quelques fractions simples"/>
+			<competence code="MS.2.M.2" name="restituer les « tables d’addition » et de multiplication de 2 à 9"/>
+			<competence code="MS.2.M.3" name="utiliser les techniques opératoires des quatre opérations sur les nombres entiers et décimaux (pour la division, le diviseur est un nombre entier)"/>
+			<competence code="MS.2.M.4" name="calculer mentalement en utilisant les quatre opérations"/>
+			<competence code="MS.2.M.5" name="estimer l’ordre de grandeur d’un résultat"/>
+			<competence code="MS.2.M.6" name="utiliser une calculatrice"/>
+			<competence code="MS.2.M.7" name="reconnaître, décrire et nommer les figures et solides usuels"/>
+			<competence code="MS.2.M.8" name="utiliser la règle, l’équerre et le compas pour vérifier la nature de figures planes usuelles et les construire avec soin et précision"/>
+			<competence code="MS.2.M.9" name="utiliser les unités de mesure usuelles ; utiliser des instruments de mesure ; effectuer des conversions"/>
+			<competence code="MS.2.M.10" name="résoudre des problèmes relevant des quatre opérations, de la proportionnalité, et faisant intervenir différents objets mathématiques : nombres, mesures, “règle de trois”, figures géométriques, schémas"/>
+			<competence code="MS.2.M.11" name="savoir organiser des informations numériques ou géométriques, justifier et apprécier la vraisemblance d’un résultat"/>
+			<competence code="MS.2.M.12" name="lire, interpréter et  construire quelques représentations simples : tableaux, graphiques"/>
+ 		</competence>
+		<competence code="MS.2.ST" edu="3.B" name="La culture scientifique et technologique">
+			<competence code="MS.2.ST.1" name="pratiquer une démarche d’investigation : savoir observer, questionner"/>
+			<competence code="MS.2.ST.2" name="manipuler et expérimenter, formuler une hypothèse et la tester, argumenter"/>
+			<competence code="MS.2.ST.3" name="mettre à l’essai plusieurs pistes de solutions"/>
+			<competence code="MS.2.ST.4" name="exprimer et exploiter les résultats d’une mesure ou d’une recherche en utilisant un vocabulaire scientifique à l’écrit et à l’oral"/>
+			<competence code="MS.2.ST.5" name="maîtriser des connaissances dans divers domaines scientifiques"/>
+			<competence code="MS.2.ST.6" name="mobiliser ses connaissances dans des contextes scientifiques différents et dans des activités de la vie courante (par exemple, apprécier l’équilibre d’un repas)"/>
+			<competence code="MS.2.ST.7" name="exercer des habiletés manuelles, réaliser certains gestes techniques"/>
+ 		</competence>
+ 	</competence>
+	<competence code="TIC.2" edu="4" name="LA MAÎTRISE DES TECHNIQUES USUELLES DE L’INFORMATION ET DE LA COMMUNICATION">
+		<competence code="TIC.2.1" name="utiliser l’outil informatique pour s’informer, se documenter, présenter un travail"/>
+		<competence code="TIC.2.2" name="utiliser l’outil informatique pour communiquer"/>
+		<competence code="TIC.2.3" name="faire preuve d'esprit critique face à l'information et à son traitement"/>
+	</competence>
+	<competence code="HUM.2" edu="5" name="LA CULTURE HUMANISTE">
+		<competence code="HUM.2.1" name="dire de mémoire, de façon expressive une dizaine de poèmes et de textes en prose"/>
+		<competence code="HUM.2.2" name="interpréter de mémoire une chanson, participer avec exactitude à un jeu rythmique ; repérer des éléments musicaux caractéristiques simples"/>
+		<competence code="HUM.2.3" name="identifier les principales périodes de l’histoire étudiée, mémoriser quelques repères chronologiques pour les situer les uns par rapport aux autres en connaissant une ou deux de leurs caractéristiques majeures"/>
+		<competence code="HUM.2.4" name="identifier sur une carte et connaître quelques caractères principaux des grands ensembles physiques et humains de l’échelle locale à celle du monde"/>
+		<competence code="HUM.2.5" name="connaître quelques éléments culturels d’un autre pays"/>
+		<competence code="HUM.2.6" name="lire et utiliser différents langages : cartes, croquis, graphiques, chronologie, iconographie"/>
+		<competence code="HUM.2.7" name="distinguer les grandes catégories de la création artistique (littérature, musique, danse, théâtre, cinéma, dessin, peinture, sculpture, architecture)"/>
+		<competence code="HUM.2.8" name="reconnaître et décrire des œuvres visuelles ou musicales préalablement étudiées : savoir les situer dans le temps et dans l’espace, identifier le domaine artistique dont elles relèvent, en détailler certains éléments constitutifs en utilisant quelques termes d’un vocabulaire spécifique"/>
+		<competence code="HUM.2.9" name="exprimer ses émotions et préférences face à une œuvre d’art, en utilisant ses connaissances"/>
+		<competence code="HUM.2.10" name="pratiquer le dessin et diverses formes d’expressions visuelles et plastiques (formes abstraites ou images) en se servant de différents matériaux,  supports,  instruments et techniques"/>
+		<competence code="HUM.2.11" name="inventer et réaliser des textes, des œuvres plastiques, des chorégraphies ou des enchaînements, à visée artistique ou expressive"/>
+	</competence>
+	<competence code="CSC.2" edu="6" name="LES COMPÉTENCES SOCIALES ET CIVIQUES">
+		<competence code="CSC.2.1" name="reconnaître les symboles de l’Union européenne"/>
+		<competence code="CSC.2.2" name="respecter les autres, et notamment appliquer les principes de l’égalité des filles et des garçons"/>
+		<competence code="CSC.2.3" name="avoir conscience de la dignité de la personne humaine et en tirer les conséquences au quotidien"/>
+		<competence code="CSC.2.4" name="respecter les règles de la vie collective, notamment dans les pratiques sportives"/>
+		<competence code="CSC.2.5" name="comprendre les notions de droits et de devoirs, les accepter et les mettre en application"/>
+		<competence code="CSC.2.6" name="prendre part à un dialogue : prendre la parole devant les autres, écouter autrui, formuler et justifier un point de vue"/>
+		<competence code="CSC.2.7" name="coopérer avec un ou plusieurs camarades"/>
+		<competence code="CSC.2.8" name="faire quelques gestes de premier secours"/>
+		<competence code="CSC.2.9" name="obtenir l’attestation de première éducation à la route ; savoir si une activité, un jeu ou un geste de la vie courante présente un danger vital"/>
+	</competence>
+	<competence code="AI.2" edu="7" name="L’AUTONOMIE ET L’INITIATIVE"> 
+		<competence code="AI.2.1" name="respecter des consignes simples en autonomie"/>
+		<competence code="AI.2.2" name="montrer une certaine persévérance dans toutes les activités"/>
+		<competence code="AI.2.3" name="commencer à savoir s’auto-évaluer dans des situations simples"/>
+		<competence code="AI.2.4" name="s’impliquer dans un projet individuel ou collectif"/>
+		<competence code="AI.2.5" name="se respecter en respectant les principales règles d’hygiène de vie ; accomplir les gestes quotidiens sans risquer de se faire mal"/>
+		<competence code="AI.2.6" name="se déplacer en s’adaptant à l’environnement"/>
+		<competence code="AI.2.7" name="réaliser une performance mesurée dans les activités athlétiques et en natation"/>
+		<competence code="AI.2.8" name="utiliser un plan"/>
+		<competence code="AI.2.9" name="soutenir une écoute prolongée (lecture, musique, spectacle, etc.)"/>
+	</competence>
+</palier>

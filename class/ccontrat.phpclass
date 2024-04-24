@@ -1,0 +1,395 @@
+<?
+/*
+CREATE TABLE `t_contrat` (
+  `id` int(11) NOT NULL auto_increment,
+  `etablissement` int(11) NOT NULL default '0',
+  `valide` int(11) default NULL,
+  `facture` int(11) default NULL,
+  `nombre_classe` int(11) default NULL,
+  `montant` float default NULL,
+  `debut_validite` date default NULL,
+  `fin_validite` date default NULL,
+  `date_facturation` date default NULL,
+  `validated` datetime default NULL,
+  `validator` int(11) default NULL,
+  `validator_host` varchar(200) default NULL,
+  `updated` datetime default NULL,
+  `updator` int(11) default NULL,
+  `created` datetime default NULL,
+  `creator` int(11) default NULL,
+  `modele` varchar(30) default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `etablissement` (`etablissement`),
+  CONSTRAINT FOREIGN KEY (`etablissement`) REFERENCES `t_etablissement` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+*/
+
+class CContrat
+{
+	var $id;
+	var $etablissement;
+
+	var $modele;
+
+	var $valide;
+	var $facture;
+	var $date_facturation;
+	
+	var $nombre_classe;
+	var $montant;
+
+	var $debut_validite;
+	var $fin_validite;
+	
+	var $items;
+	
+	var $validated;
+	var $validator;
+	var $validator_host;
+	var $updated;
+	var $updator;
+	var $created;
+	var $creator;
+
+	/* class methods */
+
+	function prix()
+	{
+		if (strtotime("now") < strtotime("2009-01-01"))
+		{
+			return array("ht" => 15.89, "tva" => 3.11, "ttc" => 19.0);
+		} 
+		return array("ht" => 24.25, "tva" => 4.75 , "ttc" => 29.0);
+	}
+
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CContrat::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectsForEtablissement($etablissement_id)
+	{
+		return CContrat::objectsWithQuery("SELECT * FROM t_contrat WHERE etablissement=$etablissement_id order by created desc");
+	}
+
+	function ouvertForEtablissement($etablissement_id)
+	{
+		$r = CContrat::objectsWithQuery("SELECT * FROM t_contrat WHERE etablissement=$etablissement_id AND valide=0 order by created desc");
+		if (count($r) > 0) return $r[1];
+		return null;
+	}
+
+	function objectWithQuery($query)
+	{
+		$r = CContrat::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($arr = CContrat::objectsWithQuery("SELECT * FROM t_contrat WHERE id=$id"))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_topic WHERE id=$id");
+	}
+	
+	function objects()
+	{
+		return CContrat::objectsWithQuery("select * from t_contrat order by created desc");
+	}
+		
+	function objectWithArray(&$arr)
+	{
+		$u = new CContrat();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CContrat::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("etablissement",$arr))
+			$this->etablissement = $arr["etablissement"];
+		if (array_key_exists("valide",$arr))
+			$this->valide = $arr["valide"];
+		if (array_key_exists("facture",$arr))
+			$this->facture = $arr["facture"];
+			
+		if (array_key_exists("nombre_classe",$arr))
+			$this->nombre_classe = $arr["nombre_classe"];
+		if (array_key_exists("modele",$arr))
+			$this->modele = $arr["modele"];
+
+		if (array_key_exists("montant",$arr))
+			$this->montant = $arr["montant"];
+
+		if (array_key_exists("debut_validite",$arr))
+			$this->debut_validite = strtotime($arr["debut_validite"]);
+		if (array_key_exists("fin_validite",$arr))
+			$this->fin_validite = strtotime($arr["fin_validite"]);
+
+		if (array_key_exists("validated",$arr))
+			$this->validated = strtotime($arr["validated"]);
+
+		if (array_key_exists("validated",$arr))
+			$this->validated = strtotime($arr["validated"]);
+
+		if (array_key_exists("validator",$arr))
+			$this->validator = $arr["validator"];
+
+		if (array_key_exists("validator_host",$arr))
+			$this->validator_host = $arr["validator_host"];
+
+		if (array_key_exists("validator_host",$arr))
+			$this->validator_host = $arr["validator_host"];
+
+		if (array_key_exists("updator",$arr))
+			$this->updator = $arr["updator"];
+		if (array_key_exists("updated",$arr))
+			$this->updated = strtotime($arr["updated"]);
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+
+			$query = sprintf("INSERT INTO t_contrat (
+							etablissement,valide,nombre_classe,montant,
+							modele,
+							debut_validite,fin_validite,
+							creator,created)
+						VALUES (
+							%s,%s,%s,%s,
+							%s,
+							%s,%s,
+							%s,NOW())",
+							$DB->INT($this->etablissement),$DB->INT($this->valide),$DB->INT($this->nombre_classe),$DB->INT($this->montant),
+							$DB->STRING($this->modele),
+							$DB->DATE($this->debut_validite),$DB->DATE($this->fin_validite),
+							$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}			
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_contrat SET
+							valide=%s,
+							nombre_classe=%s,
+							montant=%s,
+							debut_validite=%s,
+							fin_validite=%s,
+							updated=NOW(),
+							updator=%s
+							WHERE id = %s",
+							$DB->INT($this->valide),
+							$DB->INT($this->nombre_classe),
+							$DB->INT($this->montant),
+							$DB->DATE($this->debut_validite),
+							$DB->DATE($this->fin_validite),
+							$DB->INT($u->id),
+							$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+	function etablissement()
+	{
+		return CEtablissement::objectWithId($this->etablissement);
+	}
+	
+	function etat()
+	{
+		return "?";
+	}
+	
+	function debut_validite()
+	{
+		return strftime("%d/%m/%Y",$this->debut_validite);
+	}
+	function fin_validite()
+	{
+		return strftime("%d/%m/%Y",$this->fin_validite);
+	}
+	function created($fmt="%d/%m/%Y")
+	{
+		return strftime("%d/%m/%Y",$this->created);
+	}
+	function montant()
+	{
+		return number_format($this->montant,2,",","");
+	}
+	function tva()
+	{
+		return number_format($this->montant - ($this->montant / 1.196),2,",","");
+	}
+	
+	function users()
+	{
+		return CUser::objectWithContrat($this->id);
+	}
+	
+	function pdfBonDeCommande()
+	{
+		$pdf = new CPdf();
+		$pdf->init();
+		$pdf->setHeaderData(APP_PATH . "/bons_commande/logo_header.jpg", 36,"BON DE COMMANDE","À envoyer signer par la poste ou par fax");
+		
+		$pdf->AddPage();
+		
+		$pdf->SetFont("dejavusans", "", 10);
+
+		$pdf->Cell(85,0,"Commanditaire",1,0,'L',1);
+		$pdf->Cell(0,0,"Fournisseur",1,1,'L',1);
+
+		$etab = $this->etablissement();
+		$txt = "\n" . $etab->nom . "\n".
+			$etab->contact_nom . "\n" .
+			$etab->contact_adresse_1  . "\n" .
+			$etab->contact_adresse_2  . "\n" .
+			$etab->contact_codepostal . " " . $etab->contact_ville;
+		$pdf->MultiCell(85,50,$txt,1,'L',0,0);
+
+		$pdf->MultiCell(0,50,"\nEXPERT SOLUTIONS SARL\n19 bis Rue Marc Tallavi\n33 310 LORMONT\n\nSIRET : 424 836 989 00022\nN.A.F. : 5829C\nTVA : FR43424836989\n\nTél : 05 56 74 26 90\nFax : 09 57 18 74 72",1,'L',0);
+
+		$pdf->Ln(10);
+
+		$pdf->Cell(60,0,"N° de bon de commande",1,0,'C',1);
+		$pdf->Cell(40,0,"Date",1,0,'C',1);
+		$pdf->Cell(60,0,"Référence à rappeler",1,1,'C',1);
+
+		$pdf->Cell(60,0,"BC" . $this->id,1,0,'C');
+		$pdf->Cell(40,0,$this->created("%d/%m/%Y"),1,0,'C');
+		$pdf->Cell(60,0,"MEZEVAL-BC-". $this->id,1,1,'C');
+
+		$pdf->Ln(10);
+
+		$pdf->SetFont("dejavusans", "", 9);
+		$pdf->SetLineWidth(0.1);
+		$pdf->Cell(15,0,"Type", 1, 0, "L",1);
+		$pdf->Cell(30,0,"Identifiant", 1, 0, "L",1);
+		$pdf->Cell(90,0,"Intitulé", 1, 0, "L",1);
+		$pdf->Cell(15,0,"PU €HT", 1, 0, "L",1);
+		$pdf->Cell(15,0,"TVA €", 1, 0, "L",1);
+		$pdf->Cell(15,0,"PU €TTC", 1, 1, "L",1);
+		
+		$total_ht = 0;
+		$total_tva = 0;
+		
+		$pdf->SetFont("dejavusans", "", 9);
+		if ($this->items)
+		{
+			
+			foreach($this->items as $e)
+			{
+				$total_ht += $e["ht"];
+				$total_tva += $e["tva"];
+				$pdf->Cell(15,0,$e["kind"], 1, 0, "L",0);
+				$pdf->Cell(30,0,$e["key"], 1, 0, "L",0);
+				$pdf->Cell(90,0,$e["title"], 1, 0, "L",0);
+				$pdf->Cell(15,0,number_format($e["ht"],2,",",""), 1, 0, "R",0);
+				$pdf->Cell(15,0,number_format($e["tva"],2,",",""), 1, 0, "R",0);
+				$pdf->Cell(15,0,number_format($e["ht"] + $e["tva"],2,",",""), 1, 1, "R",0);
+			}
+		}
+		$pdf->Ln(10);
+		$pdf->SetFont("dejavusans", "B", 10);
+		$pdf->Cell(135,0,"TOTAUX (€) :", 0, 0, "R",0);
+		$pdf->Cell(15,0,number_format($total_ht,2,",",""), 1, 0, "R",0);
+		$pdf->Cell(15,0,number_format($total_tva,2,",",""), 1, 0, "R",0);
+		$pdf->Cell(15,0,number_format($total_ht + $total_tva,2,",",""), 1, 1, "R",0);
+		
+		$pdf->SetFont("dejavusans", "", 10);
+		$pdf->Ln(10);
+		$pdf->Cell(0,0,"Conditions de réglement : réglement à réception de facture.",0,1,'L');
+		$pdf->Cell(0,0,"Conditions générales de locations à consulter sur le site web http://www.mezeval.fr ou ci-après.",0,1,'L');
+
+		$pdf->SetLeftMargin(80);
+		$pdf->Ln(10);
+		$pdf->MultiCell(115,70,"Pour le commanditaire : \nNom du signataire : ________________________________________\n\nSignature avec la mention 'bon pour accord':",1,'L',0,1);
+		$pdf->SetLeftMargin(PDF_MARGIN_LEFT);
+		$pdf->Ln(8);
+
+		$pdf->MultiCell(0,0,"Mezeval est un service d’expert-solutions sarl au capital de 15200€, 19 bis rue marc tallavi, 33310 Lormont.",0,'C');
+		
+		$pdf->AddPage();
+		
+		$conditions = file_get_contents(APP_PATH . "/cg/" . $this->modele());
+		$pdf->SetFont("dejavusans", "", 8);
+		
+		$pdf->writeHTML($conditions, true, 0, true, 0);
+		$this->saveItems();
+		return $pdf;
+	}
+	
+	function resetItems()
+	{
+		if ($this->items) $this->items = array();
+	}
+	
+	function addItem($key,$kind,$title,$ht,$tva)
+	{
+		if (!$this->items) $this->items = array();
+		$this->items[] = array("key" => $key, "kind" => $kind, "title" => $title , "ht" => $ht , "tva" => $tva);
+	}
+	function saveItems()
+	{
+		global $DB;
+		$DB->query("UPDATE t_contrat SET items = '" . mysql_escape_string(serialize($this->items)) . "' WHERE id=".$this->id);
+	}
+	
+	function modele()
+	{
+		if ($this->modele) return $this->modele;
+		return FICHIER_CONDITIONS_DE_VENTES;
+	}
+}
+

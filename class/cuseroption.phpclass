@@ -1,0 +1,77 @@
+<?
+/*
+
+CREATE TABLE `t_user_option` (
+	userid int(11) NOT NULL,
+	name varchar(20) NOT NULL,
+	domain varchar(50) NOT NULL,
+	value text,
+	PRIMARY KEY (userid,name,domain),
+	CONSTRAINT  FOREIGN KEY (userid) REFERENCES `t_users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+*/
+class CUserOption
+{
+	var $userid;
+	var $name;
+	var $domain;
+	var $value;
+	
+	function valueWithName($name,$domain='')
+	{
+		global $DB;
+		if ($u = CUser::user())
+		{
+			$q = sprintf("SELECT value FROM t_user_option WHERE  userid=%s AND name = %s AND domain=%s",
+																$DB->ID($u->id),
+																$DB->STRING($name),
+																$DB->STRING($domain));
+			return $DB->oneValue($q);
+		}
+		return null;
+	}
+
+	function arrayWithName($name,$domain='')
+	{
+		if ($val = CUserOption::valueWithName($name,$domain))
+		{
+			return unserialize($val);
+		}
+		return array();
+	}
+	function setValueForName($value,$name,$domain='')
+	{
+		global $DB;
+		if (is_array($value)) $value = serialize($value);
+		if ($u = CUser::user())
+		{
+/*			$q = sprintf("REPLACE LOW_PRIORITY INTO t_user_option (userid,name,domain,value) VALUES (%s,%s,%s,%s)",
+																$DB->ID($u->id),
+																$DB->STRING($name),
+																$DB->STRING($domain),
+																$DB->STRING($value)); */
+			$q = sprintf("INSERT INTO  t_user_option (userid,name,domain,value) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE value=%s",
+																$DB->ID($u->id),
+																$DB->STRING($name),
+																$DB->STRING($domain),
+																$DB->STRING($value),
+																$DB->STRING($value));
+			return $DB->query($q);
+		}
+		return false;
+	}
+	function eraseValueForName($name,$domain='')
+	{
+		global $DB;
+		if ($u = CUser::user())
+		{
+			$q = sprintf("DELETE FROM t_user_option WHERE  userid=%s AND name = %s AND domain=%s",
+																$DB->ID($u->id),
+																$DB->STRING($name),
+																$DB->STRING($domain));
+			return $DB->query($q);
+		}
+		return null;
+	}
+}

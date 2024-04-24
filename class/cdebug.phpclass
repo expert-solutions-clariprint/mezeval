@@ -1,0 +1,62 @@
+<?
+/*
+						eXpert soLutions
+					www.expert-solutions.fr
+
+						Projet P.A.P.I.
+
+		Institut Regional du Travail Social Aquitaine
+					Tout droits r&eacute;serv&eacute;s.
+
+nom du fichier : xldatabase.class
+Auteur du fichier : Sylvain Benilan
+Date : 06/07/01
+
+
+*/
+$CDEBUG_FILE = null;
+$CDEBUG_VERBOSE = 10;
+class CDebug
+{
+//	static $debug_file = null;	
+//	static $verbose = 10;
+	
+	function TRACE($level,$val)
+	{
+		global $CDEBUG_FILENAME;
+		global $CDEBUG_VERBOSE;
+		global $CDEBUG_FILE;
+		if (isset($CDEBUG_FILENAME))
+		{
+			if ($CDEBUG_FILE == null) {
+				$CDEBUG_FILE = fopen($CDEBUG_FILENAME,"a");
+				fwrite($CDEBUG_FILE,
+					sprintf("------------------------- open log %s : %s \r\n",
+							strftime("%c"),
+ 							$_SERVER["SCRIPT_NAME"]));
+				fflush($CDEBUG_FILE);
+			}
+			if ($level <= $CDEBUG_VERBOSE && $CDEBUG_FILE)
+			{
+				for ($i=0;$i<$level;$i++)
+					fwrite($CDEBUG_FILE, " ");
+				fwrite($CDEBUG_FILE, "$val" . "\r\n");
+				fflush($CDEBUG_FILE);
+			}
+		}
+	}
+	function LOG()
+	{
+		if (func_num_args() == 1)
+		{
+			$v = func_get_arg(0);
+			self::TRACE(0,$v);
+		}
+		else 
+		{
+			$argv = func_get_args();
+			$format = array_shift( $argv );
+			self::TRACE(0,vsprintf($format,$argv));
+		}
+	}
+}

@@ -1,0 +1,265 @@
+<?
+/*
+
+ISO-8859-15
+WINDOWS-1258
+*/
+
+class CProgramme
+{
+	var $parser;
+	var $classe;
+	var $pstack;
+
+	var $periodes;
+
+	var $pdf;
+	function objects()
+	{
+		$res = array();
+		global $CPROGRAMME_PATH;
+		if (isset($CPROGRAMME_PATH))
+		{
+			$d = dir($CPROGRAMME_PATH);
+			if ($d)
+			{
+				while(false !== ($entry = $d->read()))
+				{
+					if ($entry[0] != "." && (substr($entry,-4,4) == ".xml" || substr($entry,-4,4) == ".csv" ))
+						$res[] = $entry;
+				}
+			}
+		}
+		sort($res);
+		return $res;
+	}
+	
+	function path($v='')
+	{
+		global $CPROGRAMME_PATH;
+		return $CPROGRAMME_PATH . "/" . $v;
+	}
+	function importFromFileToClasse($xml,$classe_id)
+	{
+		$p = new CProgramme();
+		return $p->import($xml,$classe_id);
+	}
+	function import($xml,$classe_id)
+	{
+		global $CPROGRAMME_PATH;
+		$parser = xml_parser_create();
+		$file = fopen($xml,"rb");
+		$this->pstack = array();
+		$this->classe = $classe_id;
+		if ($file)
+		{
+			xml_set_object($parser, $this);
+			xml_set_element_handler($parser, 'startXML', 'endXML');
+			while (($data = fread($file, 8192)))
+			{
+				if (!xml_parse($parser, $data, feof($file)))
+				{
+					CDebug::trace(0,sprintf('XML error at line %d column %d', 
+										xml_get_current_line_number($parser), 
+										xml_get_current_column_number($parser)));
+				}
+			}
+		}
+	}
+	
+	function lastObject()
+	{
+		if (count($this->pstack) == 0) return null;
+		return end($this->pstack);
+	}
+	
+	function startXML($parser,$name,$attr)
+	{
+		CDebug::trace(0,"startXML($parser,$name,$attr)");
+		if ($name == "SECTION")
+		{
+			$o = new CProgression();
+			$o->intitule = $attr["NAME"];
+			$o->intitule_officiel = $attr["NAME"];
+			$o->code_socle = $attr["socle"];
+			$o->classe = $this->classe;
+			if ($p = $this->lastObject())
+			{
+				$o->parentcp = $p->id;
+			}
+			$o->create();
+			array_push($this->pstack,$o);
+		}
+	}
+	function endXML($parser, $name)
+	{
+		array_pop($this->pstack);
+	}
+	
+	function exportProgression($p,$deep=1)
+	{
+		$tabs = str_repeat("\t",$deep);
+		printf("%s<section name=\"%s\" socle=\"%s\" b2i=\"%s\" langue=\"%s\" uid='section_%s' code='%s'>\n",
+					$tabs,
+					stripcslashes($p->intitule),
+					$p->code_socle,
+					$p->code_b2i,
+					$p->code_langue,
+					$p->id,
+					$p->code);
+		$deep++;
+		foreach(CProgressionPeriode::arrayForProgression($p->id) as $pl)
+			printf("%s<programmation periode='periode_%s' />\n",str_repeat("\t",$deep),$pl);
+						
+
+		foreach($p->childNodes() as $c) CProgramme::exportProgression($c,$deep);
+		printf("%s</section>\n",$tabs);
+		
+	}
+	function csvEscape($str,$pourwin=false)
+	{
+		if ($pourwin)
+			return iconv("UTF-8","WINDOWS-1258//TRANSLIT",str_replace('"','""',$str));
+
+		return str_replace('"','""',$str);
+	}
+	function csvUnescape($str,$convert_to_utf8=false)
+	{
+		if ($str[0] == '"') $str = substr($str, 1, -1);
+		if (strpos($str,'""') > 0) $str = str_replace('""','"',$str);
+		if ($convert_to_utf8) return iconv("ISO_8859-15","UTF-8",$str);
+		else return $str;
+	}
+	
+	function exportProgressionCSV($p,$deep=1,$pourwin=false)
+	{
+		$strdeep = "";
+		if ($deep > 0) $strdeep = sprintf("\"%s\",",str_repeat("+",$deep));
+
+		printf("%s\"%s\",\"%s\",\"%s\",\r\n",
+					$strdeep,
+					self::csvEscape($p->code,$pourwin),
+					self::csvEscape($p->intitule,$pourwin),
+					self::csvEscape($p->code_socle,$pourwin));
+		$deep++;
+		foreach($p->childNodes() as $c) CProgramme::exportProgressionCSV($c,$deep,$pourwin);
+	}
+	function exportClasse($classe,$p_id=null)
+	{
+		header("Content-type: text/xml");
+		header(sprintf('Content-Disposition: attachment; filename="%s.xml"',$classe->intitule));
+		echo "<?xml version='1.0' ?>\n";
+		echo "<?xml-stylesheet href=\"https://www.mezeval.fr/programme.xsl\" type=\"application/xml\"?>\n";
+		?><programme annee="<?= $classe->annee ?>" name="<?= stripcslashes($classe->intitule) ?>"><?
+		if ($p_id) {
+			if (is_array($p_id))
+				foreach($p_id as $pid) if ($p = CProgression::objectWithId($pid)) CProgramme::exportProgression($p);
+			else if ($p = CProgression::objectWithId($p_id)) CProgramme::exportProgression($p);
+		} else foreach($classe->progressions() as $p) CProgramme::exportProgression($p);
+		?></programme><? 
+	}
+
+	function exportClasseCSV($classe,$p_id=null,$deep=0,$pourwin=false)
+	{
+		CDebug::trace(0,"exportClasseCSV($class,$p_id,$deep)");
+		if ($pourwin)
+			header("Content-type: text/csv; charset=WINDOWS-1258");
+		else
+			header("Content-type: text/csv; charset=UTF-8");
+		header(sprintf('Content-Disposition: attachment; filename="%s.csv"',$classe->intitule));
+		$strdeep = "";
+		if ($deep) $strdeep = "\"niveau\",";
+		
+		if ($pourwin)
+			printf("%s%s,%s,%s,\r\n",
+					$strdeep,
+					'"code"',
+					iconv("UTF-8","WINDOWS-1258//TRANSLIT",'"intitulé"'),
+					'"code socle"');
+		else printf("%s%s,%s,%s,\r\n",
+					$strdeep,
+					'"code"',
+					'"intitulé"',
+					'"code socle"');
+		$deep = 1;
+		if ($p_id) {
+			if (is_array($p_id))
+				foreach($p_id as $pid) if ($p = CProgression::objectWithId($pid)) CProgramme::exportProgressionCSV($p,$deep,$pourwin);
+			else if ($p = CProgression::objectWithId($p_id)) CProgramme::exportProgressionCSV($p,$deep,$pourwin);
+		} else foreach($classe->progressions() as $p) CProgramme::exportProgressionCSV($p,$deep,$pourwin);
+	}
+	
+	function utf8_compliant($str)
+	{
+    	if ( strlen($str) == 0 ) return TRUE;
+		// If even just the first character can be matched, when the /u
+		// modifier is used, then it's valid UTF-8. If the UTF-8 is somehow
+		// invalid, nothing at all will match, even if the string contains
+		// some valid sequences
+		return (preg_match('/^.{1}/us',$str,$ar) == 1);
+	}
+	function importCSV($classe_id,$file_name)
+	{
+		$content = file_get_contents($file_name);
+		if (!self::utf8_compliant($content))
+		{
+			CDebug::trace(0,"Convert file ...");
+			file_put_contents($file_name,iconv("WINDOWS-1258","UTF-8",$content));
+		}
+		$firstline = substr($content,0,10); 
+		$sep = ",";
+		if (stripos($firstline,";") > 0) $sep = ";";
+
+		if ($file_handle = fopen($file_name,"r"))
+		{
+			
+			$lines = array();
+			while ($line = fgetcsv($file_handle,0,$sep))
+			{
+				$lines[] = $line;
+			}
+
+			$entete = implode($lines[0]);
+			echo "entete:" . $entete . " ". strstr($entete,"niveau");
+			$usedeep=0;
+			if (strstr($entete,"niveau")) $usedeep=1;
+		
+			$stack = array();
+			$lastdeep = -1;
+			$referenciel =0;
+			for($li = 1; $li < count($lines); $li++)
+			{
+				if ($p = $lines[$li])
+				{
+					
+					$x = new CProgression();
+					$x->classe= $classe_id;
+					$x->code = $p[0 + $usedeep];
+					if (count($p) > 1) $x->intitule = $p[1 + $usedeep];
+					if (count($p) > 2) $x->code_socle = $p[2 + $usedeep];
+					if ($usedeep)
+					{
+						$niveau = $p[0];
+						$deep=strlen($niveau);
+						if ($li == 1) $referenciel = $deep;
+						if ($deep >= $lastdeep)
+						{
+							if ($deep == $lastdeep) array_pop($stack);
+							
+						} else if ($deep < $lastdeep)
+						{
+							$stack = array_slice($stack,0,$deep - $referenciel);
+						}
+						if ($parent = end($stack))
+						{
+							$x->parentcp = $parent->id;
+						}
+						array_push($stack,$x);
+						$lastdeep = $deep;
+					}
+					$x->create();
+				}
+			}
+		}
+	}
+}

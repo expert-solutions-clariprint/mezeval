@@ -1,0 +1,187 @@
+<? 
+/*
+CREATE TABLE `t_usergroups` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`name` TEXT,
+	PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `t_usergroups_user` (
+	`tgroup` int,
+	tuser int,
+	PRIMARY KEY (tgroup,tuser),
+	UNIQUE INDEX (tgroup,tuser)
+);
+
+*/		
+
+class CUserGroup
+{
+	var $id;
+	var $name;
+	
+	/* class methods */
+	
+	function objectWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = self::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+
+	function allObjects()
+	{
+		return CUserGroup::objectWithQuery("select * from t_usergroups order by name");
+	}
+		
+	function objectWithArray(&$arr)
+	{
+		$u = new CUserGroup();
+		$u->initWithArray($arr);
+		return $u;
+	}
+	
+	function objectWithId($id)
+	{
+		$arr = self::objectWithQuery("select * from t_usergroups WHERE id=$id");
+		if (count($arr) == 1)
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+	
+	function groupsOfUser($user_id)
+	{
+		return self::objectWithQuery("select t_usergroups.* from t_usergroups,t_usergroups_user WHERE t_usergroups_user.tgroup =t_usergroups.id AND t_usergroups_user.tuser = $user_id ");
+	}
+
+	function isGroupOfUser($group_id,$user_id)
+	{
+		global $DB;
+		return $DB->oneValue("SELECT COUNT(tgroup) FROM t_usergroups_user where tgroup=$group_id AND tuser=$user_id");
+	}
+	
+	function createObjectWithArray(&$arr)
+	{
+		$u = self::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		$DB->query("delete from t_usergroups_user where tgroup = $id");
+		$DB->query("delete from t_usergroups where id = $id");
+	}
+	
+	function deleteAllForUser($user_id)
+	{
+		global $DB;
+		$DB->query("delete from t_usergroups_user where tuser=$user_id");
+	}
+	
+	function setUniqueGroupForUser($group_id,$user_id)
+	{
+		CUserGroup::deleteAllForUser($user_id);
+		CUserGroup::addUserToGroup($user_id,$group_id);
+	}
+	
+	/* object method */
+	
+	function info() { return $this->name; }
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = stripcslashes($arr["id"]);
+		if (array_key_exists("name",$arr))
+			$this->name = stripcslashes($arr["name"]);
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		$query = "UPDATE t_usergroups SET name  = " . $DB->STRING($this->name) . " WHERE id=". $this->id;
+		$DB->query($query);
+	}
+	
+	function create()
+	{
+		global $DB;
+		$query = "INSERT INTO  t_usergroups  (name)" .
+					" VALUES (". $DB->STRING($this->name) . ")";
+		$res = $DB->query($query);
+		if ($res)
+		{
+			$this->id = $DB->getLastID();
+			return true;
+		}
+		return false;
+	}
+	
+	function del()
+	{
+		self::deleteObjectWithId($this->id);
+	}
+	
+	function addUser($user_id) {
+		self::addUserToGroup($user_id,$this->id);
+	}
+
+	function addUserToGroup($user_id,$group_id) {
+		global $DB;
+		$DB->query("INSERT INTO t_usergroups_user (`tgroup`,`tuser`) VALUES ($group_id,$user_id)");
+	}
+
+	function usersForGroup($group_id)
+	{
+		return CUser::allObjectsFromQuery("SELECT t_user.* FROM t_users,t_usergroups_user WHERE t_users.id = t_usergroups_user.tuser AND t_usergroups_user.tgroup=$group_id");
+	}
+	function users()
+	{
+		return self:: usersForGroup($this->id);
+	}
+	
+	function managedUsers()
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query("select * from t_users where data_base like '" . addslashes($this->data_base) . "%' order by nom");
+		if ($r)
+		{
+			while ($tmp = $DB->getRow($r))
+			{
+				$u = new CUser();
+				$u->initWithArray($tmp);
+				$res[] = $u;
+			}
+		}
+		return $res;
+	}
+	function get_creation() {
+		if ($this->created_date) return strftime("%c",$this->created_date);
+		return "-";
+	}
+	
+	function removeGroupsOfUser($user_id)
+	{
+		global $DB;
+		$DB->query("delete from t_usergroups_user where tuser =$user_id");
+	}
+	function removeGroupOfUsers(& $arr)
+	{
+		global $DB;
+		$DB->query("delete from t_usergroups_user where tuser IN " . $DB->INT_LIST($arr));
+	}
+}

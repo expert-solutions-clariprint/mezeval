@@ -1,0 +1,51 @@
+[Wed Jan 12 17:06:46 2011] [error] [client 127.0.0.1] File does not exist: /Library/WebServer/mezeval/app/www/null, referer: http://local.mezeval.fr/?module=classe
+[Thu Jan 13 09:53:37 2011] [error] [client 127.0.0.1] File does not exist: /Library/WebServer/mezeval/app/www/module=eleve&id=640, referer: http://local.mezeval.fr/?module=classe&id=98
+[Thu Feb 03 10:30:53 2011] [error] [client 127.0.0.1] File does not exist: /Library/WebServer/mezeval/app/www/<, referer: http://local.mezeval.fr/?module=progressions&id=98
+[Thu Feb 03 10:30:59 2011] [error] [client 127.0.0.1] File does not exist: /Library/WebServer/mezeval/app/www/<, referer: http://local.mezeval.fr/?module=progressions&id=98
+[Tue Jan 16 14:53:43 2018] [error] [client 127.0.0.1] File does not exist: /Library/WebServer/mezeval/app/www/apple-touch-icon-precomposed.png
+[Tue Jan 16 14:53:43 2018] [error] [client 127.0.0.1] File does not exist: /Library/WebServer/mezeval/app/www/apple-touch-icon.png
+[Tue Jan 16 14:53:44 2018] [error] [client 127.0.0.1] File does not exist: /Library/WebServer/mezeval/app/www/apple-touch-icon-precomposed.png
+[Tue Jan 16 14:53:44 2018] [error] [client 127.0.0.1] File does not exist: /Library/WebServer/mezeval/app/www/apple-touch-icon.png
+[Wed Sep 19 14:15:00.620556 2018] [authz_core:error] [pid 86892] [client 127.0.0.1:65171] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Mon Oct 28 15:35:05.628459 2019] [authz_core:error] [pid 37437] [client 127.0.0.1:60779] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Thu Nov 14 14:14:11.016136 2019] [authz_core:error] [pid 17146] [client 127.0.0.1:54256] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Thu Nov 14 14:14:11.139352 2019] [authz_core:error] [pid 17146] [client 127.0.0.1:54256] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico, referer: http://local.mezeval.fr/
+[Sun Jun 28 08:53:07.881403 2020] [authz_core:error] [pid 25870] [client 127.0.0.1:62612] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Sat Sep 19 12:32:56.093972 2020] [authz_core:error] [pid 1370] [client 127.0.0.1:49590] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Sat Sep 19 12:32:56.122265 2020] [authz_core:error] [pid 1370] [client 127.0.0.1:49590] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico, referer: http://local.mezeval.fr/
+[Sat Mar 13 10:09:25.289728 2021] [authz_core:error] [pid 81629] [client 127.0.0.1:57074] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Sat Mar 13 10:09:25.497899 2021] [authz_core:error] [pid 81629] [client 127.0.0.1:57074] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico, referer: http://local.mezeval.fr/
+[Sat Mar 13 10:10:09.827460 2021] [authz_core:error] [pid 80628] [client 127.0.0.1:57153] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Tue Apr 20 17:58:42.176473 2021] [authz_core:error] [pid 357] [client 127.0.0.1:52930] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Thu Aug 12 08:05:45.121694 2021] [authz_core:error] [pid 431] [client 127.0.0.1:55854] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Thu Aug 12 08:06:57.069813 2021] [authz_core:error] [pid 3821] [client 127.0.0.1:56029] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Thu Aug 12 08:06:57.133623 2021] [authz_core:error] [pid 10078] [client 127.0.0.1:56028] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico, referer: http://local.mezeval.fr/
+[Wed Sep 01 22:37:15.081313 2021] [authz_core:error] [pid 64395] [client 127.0.0.1:64531] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Wed Sep 01 22:37:15.108467 2021] [authz_core:error] [pid 64395] [client 127.0.0.1:64531] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico, referer: http://local.mezeval.fr/
+[Fri Sep 24 21:48:44.413289 2021] [authz_core:error] [pid 444] [client 127.0.0.1:49825] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Fri Sep 24 21:48:44.528995 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon-precomposed.png
+[Fri Sep 24 21:48:44.531773 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon.png
+[Fri Sep 24 21:48:44.590248 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico
+[Fri Sep 24 21:48:44.592480 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon-precomposed.png
+[Fri Sep 24 21:48:44.594389 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon.png
+[Fri Sep 24 21:48:44.596245 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico
+[Fri Sep 24 21:48:44.617956 2021] [authz_core:error] [pid 443] [client 127.0.0.1:49824] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Fri Sep 24 21:48:44.626605 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon-precomposed.png
+[Fri Sep 24 21:48:44.629343 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon.png
+[Fri Sep 24 21:48:44.632312 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico
+[Fri Sep 24 21:48:44.634251 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon-precomposed.png
+[Fri Sep 24 21:48:44.636007 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon.png
+[Fri Sep 24 21:48:44.637660 2021] [authz_core:error] [pid 442] [client 127.0.0.1:49827] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico
+[Wed Oct 13 10:01:23.419297 2021] [authz_core:error] [pid 82639] [client 127.0.0.1:49626] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Wed Oct 13 10:01:23.481868 2021] [authz_core:error] [pid 82639] [client 127.0.0.1:49626] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico, referer: http://local.mezeval.fr/
+[Wed Oct 13 10:01:23.524542 2021] [authz_core:error] [pid 80158] [client 127.0.0.1:49634] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon-precomposed.png
+[Wed Oct 13 10:01:23.532380 2021] [authz_core:error] [pid 80158] [client 127.0.0.1:49634] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon.png
+[Wed Oct 13 14:48:35.635890 2021] [authz_core:error] [pid 82639] [client 127.0.0.1:60330] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Wed Nov 24 08:22:37.085460 2021] [authz_core:error] [pid 56060] [client 127.0.0.1:54640] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Wed Nov 24 08:22:37.398301 2021] [authz_core:error] [pid 55911] [client 127.0.0.1:54653] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon-precomposed.png
+[Wed Nov 24 08:22:37.439727 2021] [authz_core:error] [pid 55911] [client 127.0.0.1:54653] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon.png
+[Sun Feb 13 14:37:43.316901 2022] [authz_core:error] [pid 9173] [client 127.0.0.1:60129] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/
+[Sun Feb 13 14:37:43.327138 2022] [authz_core:error] [pid 9172] [client 127.0.0.1:60128] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/favicon.ico, referer: http://local.mezeval.fr/
+[Sun Feb 13 14:37:43.379530 2022] [authz_core:error] [pid 9174] [client 127.0.0.1:60130] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon-precomposed.png
+[Sun Feb 13 14:37:43.380481 2022] [authz_core:error] [pid 9174] [client 127.0.0.1:60130] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/apple-touch-icon.png
+[Sun Feb 13 14:37:45.816541 2022] [authz_core:error] [pid 9172] [client 127.0.0.1:60128] AH01630: client denied by server configuration: /Library/WebServer/mezeval/app/www/

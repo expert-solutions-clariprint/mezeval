@@ -1,0 +1,909 @@
+
+body
+{
+/*	background-color: #E0E0E0; */
+	margin: 0px;
+	font-family: Lucida Sans Unicode,Lucida Grande,Georgia,Arial,sans-serif;
+	font-size: 11px;
+	
+/*	background-image: url(http://www.autoexpert.fr/img/backgrounds/bg_body.gif); */
+/*	background-color: rgb(227, 227, 227); */
+	background-color: #464956; /* #494949;"" */
+	background-repeat: repeat-x;
+}
+body table
+{
+	font-size: 11px;
+}
+form 
+{
+	border:0px;
+	margin: 0px;
+	padding: 0px;
+}
+table
+{
+	margin: 0px;
+}
+div#header,
+div#body,
+div#footer,
+div#menus
+{
+	width: 900px;
+}
+div#body h1
+{
+	font-size: 18px;
+	margin: 3px 0px 0px 10px;
+}
+div#body h2
+{
+	font-size: 15px;
+}
+div#header
+{
+	margin: 0px auto 0px auto;
+}
+div#body,
+div#footer,
+div#menus
+{
+	margin: 0px auto 0px auto;
+	clear: both;
+}
+
+div#footer
+{
+	background-color: #494949;
+	color: white;
+	font-size: 9px;
+	text-align: center;
+	padding: 3px;
+}
+div#footer a
+{
+	color: white;
+}
+div#banner img
+{
+	border:0px;
+}
+
+
+
+div#body
+{
+	overflow: auto;
+	background-color: white;
+}
+
+div#body table thead
+{
+	background-color:  rgb(140,140,150)  /* #464956 */;
+	color: white;
+	
+}
+
+div#body table.liste
+{
+	margin-top: 0px;
+	width: 100%;
+/*	border:1px solid #464956; */
+	border-bottom: 2px solid rgb(140,140,150);
+}
+
+div#body table.liste tr.highlight td,
+div#body table.liste tbody tr:hover td
+{
+	background-color: #F0F0F0;
+}
+
+table.liste tr.niveau1 td.intitule
+{
+	
+}
+
+div#body
+{
+	padding-bottom: 10px;
+}
+
+tr.alternate td 
+{
+	background-color: #ffe3af;
+}
+
+div.control,
+table.control,
+ul.control
+{
+	background-color: #C0C0C0;
+	border: 0px solid #464956;
+	margin-bottom: 5px;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+ul.control li
+{
+	display: inline
+}
+/*****************************************
+		MENUS
+******************************************/
+
+div#menus {
+	height: 20px;
+	font-size: 14px;
+}
+div#menus div
+{
+	float: left;
+	margin: 0;
+	color : white;
+	border-right: 0px solid white ;
+	height: 20px;
+}
+
+div#menus a,
+div#menus a:visited
+{ 
+	margin: 0;
+	color: white;
+	text-decoration: none;
+	padding: 2px 10px 0px 10px;
+}
+div#menus .selected 
+{
+	background:  white url(/img/onglet_left.gif) no-repeat left top ;
+
+}
+div#menus .selected a
+{
+	display: block;
+	background:  transparent url(/img/onglet_right.gif) no-repeat right top;
+	padding: 2px 10px 0px 10px;
+	margin: 0px;
+}
+
+
+div#menus div.selected a,
+div#menus div.selected a:visited
+{
+	color: #464956;
+}
+
+div#menus div a:hover
+{
+	color : #DBDBDB; 
+}
+div#menus h1
+{
+	color: black;
+	padding: 5px 0px 5px 10px;
+	background-color: white;
+	font-size: 18px;
+	width: 890px;
+	margin-top: 0px;
+	border-bottom: 1px solid white;
+	margin-bottom: 0px;
+}
+
+div#menus div.selected_classe
+{
+	border-top: 1px solid  #464956;
+	background:  white url(/img/onglet_left.gif) no-repeat left top ;
+}
+div#menus div.selected_classe a
+{
+	display: block;
+	background:  transparent url(/img/onglet_right.gif) no-repeat right top;
+	padding: 2px 10px 0px 10px;
+	margin: 0px;
+
+}
+div#menus div.selected_classe a,
+div#menus div.selected_classe a:visited
+{
+	
+	color: black;
+}
+
+/* --------- MENUS -------------- */
+
+div#header div#banner
+{
+	height: 90px;
+}
+div#header div#banner .head_pub
+{
+	float: right;
+}
+div#header div#banner .head_pub p
+{
+	color: white;
+	font-size: 9px;
+	width: 600px;
+	margin: 0px;
+}
+
+/*****************************************
+		login
+******************************************/
+
+form#login
+{
+	width: 300px;
+	border: 1px solid white;
+	margin-right: auto;
+	margin-left: auto;
+	margin-top: 100px;
+	margin-bottom: 100px;
+	padding: 20px;
+	font-weight: bold;	
+}
+
+form#login input#login,	
+form#login input#password
+{
+	width: 100%;
+}
+
+/*****************************************
+		Accueil
+******************************************/
+
+div.default div.bandeau_annonces
+{
+	margin-top: 0px;
+	background-color: #3D7B2E;
+	
+	float: left;
+	width: 70px;
+	height: 285px;
+	margin-left: 0px;
+	color: white;
+}
+
+div.default div.bandeau_annonces div
+{
+	float: left;
+	margin-top: 0px;
+	padding: 0px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	text-align: right;
+}
+div.default div.bandeau_annonces div img
+{
+	padding: 0px;
+	margin: 0px;
+}
+div.default div.bandeau_annonces h1
+{
+	font-size: 11px;
+}
+
+
+.liseret
+{
+	border-right: 1px solid white;
+	border-color: #DBDBDB;
+	margin-right: 5px;
+	padding-right: 10px;
+}
+
+div.default  div.homebox
+{
+	width: 283px;
+	float: left;
+	height: 300px; 
+	margin: 5px;
+}
+
+div.default  div.homebox H1
+{
+	background-color: #DBDBDB;
+	margin: 0px;
+	color: black;
+	padding: 3px;
+	font-size: 15px;
+}
+
+div.default  div.homebox H2
+{
+	margin: 0px;
+	font-size: 12px;
+	background-color: white;
+}
+
+
+
+	/************************
+		Evaluations Note
+	*************************/
+
+div.evaluation_notes
+{
+	overflow: auto;
+	background-color: white;
+	font-size: 11px;
+}
+
+div.evaluation_notes,
+div.evaluation_notes table
+{
+	font-size: 11px;
+}
+
+div.evaluation_notes
+{
+	
+}
+
+div.evaluation_notes div.standard_note div
+{
+	display: inline;
+	color: #B0B0B0;
+	font-size: 9px;
+	cursor: pointer;
+	padding: 0px 0px 0px 0px;
+	margin: 0px 0px 0px 5px;
+}
+div.evaluation_notes div.standard_note div.selected
+{
+	color: black;
+	font-weight: bold;
+	font-size: 10px;
+}
+
+	/************************
+		Progressions
+	*************************/
+
+table.programme
+{
+	border-collapse: collapse;	
+}
+table.programme tr td.souselement
+{
+	width: 150px;
+	font-size: 10px;
+	font-weight: normal;
+}
+table tr td.modifier
+{
+	width: 80px;
+	font-size: 10px;
+	font-weight: normal;
+}
+
+table.programme tr td.intitule
+{
+	padding-left: 60px;
+}
+
+table.liste tr.niveau1,
+table.programme tr.niveau1
+{
+	font-size: 13px;
+	font-weight: bold; 
+}
+
+table.liste tr.niveau1 td,
+table.programme tr.niveau1 td
+{
+	border-top: 3px solid  #F0F0F0;
+}
+
+table.liste tr.niveau1 td.intitule,
+table.programme tr.niveau1 td.intitule
+{
+	padding-left: 1px;
+}
+table.liste tr.niveau2,
+table.programme tr.niveau2
+{
+	font-size: 13px;
+/*	font-weight: bold; */
+}
+table.liste tr.niveau2 td,
+table.programme tr.niveau2 td
+{
+	border-top: 1px solid  #F0F0F0;
+}
+
+table.liste tr.niveau2 td.intitule,
+table.programme tr.niveau2 td.intitule
+{
+	padding-left: 20px;
+}
+
+table.liste tr.niveau3,
+table.programme tr.niveau3
+{
+	font-size: 12px;
+}
+table.liste tr.niveau3 td.intitule,
+table.programme tr.niveau3 td.intitule
+{
+	padding-left: 40px;
+}
+
+table.liste tr.niveau3,
+table.programme tr.niveau3
+{
+	font-size: 11px;
+}
+table.liste tr.niveau3 td.intitule,
+table.programme tr.niveau3 td.intitule
+{
+	padding-left: 50px;
+}
+
+table.liste tr.niveau4,
+table.programme tr.niveau4
+{
+	font-size: 11px;
+}
+
+table.liste .action
+{
+			text-align: center;
+			padding-right: 10px;
+			padding-left:10px;
+}
+table.liste .action a
+{
+			text-decoration: none;
+			color: #464956;
+}
+table.liste .action img
+{
+	cursor: pointer;
+}
+table.liste .action a:hover
+{
+			color: rgb(255, 165, 0);
+}
+
+table.programme tr.niveau4 td.intitule,
+table.programme tr.niveau4 td.intitule
+{
+	padding-left: 60px;
+}
+
+table.programme tr.niveau5
+{
+	font-size: 11px;
+}
+table.programme tr.niveau5 td.intitule
+{
+	padding-left: 70px;
+}
+
+
+
+div.classes table th
+{
+/*	text-align: left;
+	background-color: rgb(140,140,150) /* #464956 
+	color: white; */
+}
+div.classes div.colons
+{
+	float: left;
+	width: 45%;
+}
+div.classes table.layout > tbody > tr > td
+{
+	vertical-align: top;
+}
+
+table.programme tr.highlight td,
+table.programme tbody tr:hover td
+{
+	background-color: #F0F0F0;
+}
+div.classes table.liste tfoot tr td
+{
+	background-color: #F0F0F0;
+}
+
+/*****************************************
+		Contrats
+******************************************/
+div.contrats table#contrats tfoot th
+{
+}
+/*****************************************
+		Progression
+******************************************/
+
+div.progression table tbody th
+{
+	text-align: left;
+	background-color: #464956;
+	color: white;
+}
+
+
+.stdTh
+{
+	text-align: left;
+	background-color: #464956;
+	color: white;
+}
+
+
+div#sousmenus
+{
+	width: 900px;
+	height: 30px;
+	margin: 0px auto 0px auto;
+	clear: both;
+	display: block;
+	border-bottom: 1px solid #999;
+}
+div#sousmenus div
+{
+	float: left;
+	border-right: 1px solid #999;
+	height: 30px;
+	vertical-align: middle;	
+	
+}
+div#sousmenus div p
+{
+	margin: 5px 10px 2px 10px; 
+}
+div#sousmenus  select,
+div#sousmenus  a
+{
+/*	float: left; */
+	text-decoration: none;
+}
+div#sousmenus  div.selected_classe ,
+div#sousmenus  div.selected
+{
+	background-color: rgb(255, 165, 0);
+}
+div#sousmenus  a:hover
+{
+	color: rgb(255, 165, 0);
+}
+div#sousmenus div.selected a:hover,
+div#sousmenus div.selected a
+{
+	color: black;
+	font-weight: bold;
+}
+
+
+
+table.informations
+{
+	
+}
+
+table.informations th
+{
+	text-align: left;
+	background-color: rgb(140,140,150) /* #464956 */;
+	color: white;	
+}
+
+table.stat_table_repartition
+{
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+table.stat_table_repartition tbody tr td,
+table.stat_table_repartition tbody tr:hover td
+{
+	border: 0px;
+}
+
+p.notice
+{
+	margin: 5px 5px 5px 5px;
+	background-color: #F0F0F0;
+	font-size: 10px;
+}
+p.alert,
+div.alert
+{
+	border: 2px solid red;
+	background-color: #EECCCC;
+	margin-top : 10px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10px;
+	width: 500px;
+	padding: 10px;
+	text-align: center;
+}
+div.success
+{
+	border: 2px solid green;
+	background-color: #CCFFCC;
+	margin-top : 10px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10px;
+	width: 500px;
+	padding: 10px;
+	text-align: center;
+}
+
+
+div.dialog 
+{
+	background-color: #FFFFFF;
+	border: 2px solid #464956;
+}
+
+div.dialog h1
+{
+	background-color: #464956;
+	color: white;
+	width: 100%;
+	font-size: 10px;
+	margin-top: 0px;
+}
+
+
+
+div.dialog table
+{
+	width: 100%;
+}
+div.dialog table th,
+div.dialog table td
+{
+	text-align: left;
+}
+
+table.commandes tfoot td,
+table.commandes tfoot th
+{
+	border-top: 1px solid black;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+table.treeview td
+{
+	text-align: left;
+}
+table.treeview tr.openfolder td.folderstatus
+{
+	background-image: url(/img/open_arrow.gif);
+	background-repeat: no-repeat;
+	background-position: top right;
+	margin-right: 3px;
+}
+table.treeview tr td.folderstatus
+{
+	background-image:  url(/img/close_arrow.gif);
+	background-repeat: no-repeat;
+	background-position: top right;
+	margin-right: 3px;
+	width: 12px;
+}
+table.treeview tr.nofolder td.folderstatus
+{
+	background-image: none;
+}
+table.treeview tr td.icon
+{
+	background-image:  url(/img/genericfoldericon.png);
+	background-repeat: no-repeat;
+}
+table.treeview tr.openfolder td.icon
+{
+	background-image: url(/img/openfoldericon.png);
+	background-repeat: no-repeat;
+}
+table.treeview tr.nofolder td.icon
+{
+	background-image: url(/img/progression.png);
+	background-repeat: no-repeat;
+}
+
+table.treeview tr.niveau0 td.icon,
+table.treeview tr.deep0 td.icon
+{
+	background-position: 0 0;
+	padding-left: 20px;
+}
+table.treeview tr.niveau1 td.icon,
+table.treeview tr.deep1 td.icon
+{
+	background-position: 5px 2px;
+	padding-left: 25px;
+}
+table.treeview tr.niveau2 td.icon,
+table.treeview tr.deep2 td.icon
+{
+	background-position: 10px 0;
+	padding-left: 35px;
+}
+table.treeview tr.niveau3 td.icon,
+table.treeview tr.deep3 td.icon
+{
+	background-position: 15px 0;
+	padding-left: 40px;
+}
+table.treeview tr.niveau4 td.icon,
+table.treeview tr.deep4 td.icon
+{
+	background-position: 20px 0;
+	padding-left: 45px;
+}
+table.treeview tr.niveau5 td.icon,
+table.treeview tr.deep5 td.icon
+{
+	background-position: 25px 0;
+	padding-left: 50px;
+}
+table.treeview tr.niveau6 td.icon,
+table.treeview tr.deep6 td.icon
+{
+	background-position: 30px 0;
+	padding-left: 55px;
+}
+
+input.numberformat
+{
+	text-align: right;
+}
+table tbody td.number
+{
+	text-align: right;	
+}
+
+input.eval
+{
+	text-align: center;
+	border: 1px solid #A0A0A0;
+}
+
+td.center
+{
+	text-align: center;
+}
+
+table#nav
+{
+	margin-top: 10px;
+	width: 890px;
+}
+
+table#nav td#next
+{
+	text-align: right;
+}
+
+
+/*****************************************
+		LivePipe Popup
+******************************************/
+
+	.simple_popup {  
+		border: 2px solid rgb(70, 73, 86);
+		background-color:#fff;  
+		padding: 0px;
+		max-width: 700px;
+		text-align: left;  
+		font-family: "Lucida Grande",Verdana;  
+		font-size: 12px;  
+		color: #333;  
+	}
+	.simple_popup h1
+	{
+		margin-top: 0px;
+		margin: 0px;
+		padding: 1px;
+		background-color : rgb(70, 73, 86);
+		color: white;
+		font-size: 11px;
+		font-weight: bold;
+	}
+	.simple_popup table.liste
+	{
+		margin: 0px;
+		width: 100%;
+	}
+	.simple_popup table.liste thead td
+	{
+		background-color : rgb(70, 73, 86);
+		color: white;
+		font-size: 11px;
+	}
+
+
+img.detailsOnClick
+{
+	cursor: pointer;
+}
+
+
+
+
+
+table.XLDatePicker
+{
+	margin-top: 5px;
+	width: 120px;
+/*	background-color: rgb(244, 245, 245); */
+	background-color: #A0A0A0;
+	z-index: 10000;
+	font-size: 10px;
+	border-collapse: collapse;
+	border: 3px solid #B0B0B0;
+	position: fixed;
+}
+
+table.XLDatePicker tbody tr td
+{
+	background-color: rgb(244, 245, 245);
+	cursor: pointer;
+	text-align: right;
+	border: 1px solid white;
+	padding: 2px;
+}
+table.XLDatePicker tbody tr th
+{
+	padding: 0px;
+	color: #F0F0F0;
+	width: 22px;
+}
+
+table.XLDatePicker thead tr th,
+table.XLDatePicker thead tr td
+{
+	text-align: center;
+	padding: 0px;
+	background-color: #A0A0A0;
+	color: #F0F0F0;
+}
+table.XLDatePicker thead tr td
+{
+	cursor: pointer;
+}
+table.XLDatePicker tbody tr.selected td
+{
+	font-weight: bold;
+}
+
+table.XLDatePicker tbody tr.selected td.selected
+{
+	color: red;
+}
+
+table.XLDatePicker tfoot tr td
+{
+	text-align: center;
+	color: #F0F0F0;
+	background-color: #A0A0A0;
+}
+
+
+#control_overlay {  
+    background-color:#000;  
+}
+
+
+.saisie_progression_popup {  
+	border: 2px solid rgb(70, 73, 86);
+	background-color:#fff;  
+	padding: 0px;
+	width: 900px;
+	text-align: left;  
+	font-family: "Lucida Grande",Verdana;  
+	font-size: 12px;  
+	color: #333;  
+}
+

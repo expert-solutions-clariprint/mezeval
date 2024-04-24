@@ -1,0 +1,280 @@
+<?
+/*
+CREATE TABLE t_classe_stats (
+	id int(11) NOT NULL auto_increment,
+	classe int(11)
+	order_index int,
+	intitule varchar(200) default NULL,
+	mode varchar(200) default NULL,
+	parametres text default '',
+	PRIMARY KEY  (id),
+	KEY k_classe (classe),
+	CONSTRAINT FOREIGN KEY (classe) REFERENCES t_classe (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+*/
+
+class CClasseStat
+{
+	var $id; // int(11) NOT NULL auto_increment,
+	var $classe; // int(11)
+	var $order_index; // int,
+	var $intitule; // varchar(200) default NULL,
+	var $mode; // varchar(200) default NULL,
+	var $parametres; //  text default '',
+
+	var $created;
+	var $creator;
+	
+	/* class methods */
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CClasseStat::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CClasseStat::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($arr = CClasseStat::objectsWithQuery("SELECT * FROM t_classe_stat WHERE id=$id"))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_classe_stat WHERE id=$id");
+	}
+		
+	function objects()
+	{
+//		return CClasseStat::objectsWithQuery("select * from t_classe_stat order by annee,intitule desc");
+		return array();
+	}
+	function objectsForClasse($classe_id)
+	{
+		return CClasseStat::objectsWithQuery("select * from t_classe WHERE classe=$classe_id order by annee desc,intitule asc");
+	}
+	
+	function objectWithArray(&$arr)
+	{
+		$u = new CClasse();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CClasseStat::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = (int) $arr["id"];
+		if (array_key_exists("classe",$arr))
+			$this->classe = (int) $arr["classe"];
+
+		if (array_key_exists("intitule",$arr))
+			$this->intitule = stripcslashes($arr["intitule"]);
+
+	var $order_index; // int,
+	var $intitule; // varchar(200) default NULL,
+	var $mode; // varchar(200) default NULL,
+	var $parametres; //  text default '',
+
+
+		if (array_key_exists("order_index",$arr))
+			$this->order_index = (int) $arr["order_index"];
+
+		if (array_key_exists("parametres",$arr))
+			$this->parametres = serialize('');
+
+	var $parametres; //  text default '',
+
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+		if (array_key_exists("socle",$arr))
+			$this->socle = stripcslashes($arr["socle"]);
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+
+		if (array_key_exists("a_color",$arr))
+			$this->a_color = strtotime($arr["a_color"]);
+		if (array_key_exists("b_color",$arr))
+			$this->b_color = strtotime($arr["b_color"]);
+		if (array_key_exists("c_color",$arr))
+			$this->c_color = strtotime($arr["c_color"]);
+		if (array_key_exists("z_color",$arr))
+			$this->z_color = strtotime($arr["z_color"]);
+	}
+	
+	function create()
+	{
+		global $DB;
+		
+		if ($u = CUser::getCurrentUser())
+		{
+			
+			$query = sprintf("INSERT INTO t_classe (intitule,etablissement,annee,description,socle,a_color,b_color,c_color,z_color,manager,creator,created) VALUES (%s,%s,%d,%s,%s,%s,%s,%s,%s,%s,%s,NOW())",
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->etablissement),
+								$DB->INT($this->annee),
+								$DB->STRING($this->description),
+								$DB->STRING($this->socle),
+								$DB->STRING($this->a_color),
+								$DB->STRING($this->b_color),
+								$DB->STRING($this->c_color),
+								$DB->STRING($this->z_color),
+								$DB->INT($u->id),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}
+			
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_classe SET intitule = %s, annee=%s, description = %s, socle = %s, a_color = %s, b_color = %s, c_color = %s, z_color = %s WHERE id = %s",
+								$DB->STRING($this->intitule),
+								$DB->INT($this->annee),
+								$DB->STRING($this->description),
+								$DB->STRING($this->socle),
+								$DB->STRING($this->a_color),
+								$DB->STRING($this->b_color),
+								$DB->STRING($this->c_color),
+								$DB->STRING($this->z_color),
+								$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+	function intitule()
+	{
+		if (!$this->intitule) return "nouveau groupe";
+		return $this->intitule;
+	}
+	function periodes()
+	{
+		return CPeriode::objectsForClasse($this->id);
+	}
+	function eleves()
+	{
+		return CEleve::objectsForClasse($this->id);
+	}
+	
+	function socle()
+	{
+		if ($this->socle) return CSocle::objectFromFile($this->socle);
+		return null;
+	}
+	
+	function progressions()
+	{
+		return CProgression::parentsForClasse($this->id);
+	}
+	function bilansProgression()
+	{
+		return CBilanProgression::objectsForClasse($this->id);
+	}
+
+	function url_colors()
+	{
+		return sprintf("a_color=%s&b_color=%s&c_color=%s&z_color=%s",
+						urlencode($this->a_color()),
+						urlencode($this->b_color()),
+						urlencode($this->c_color()),
+						urlencode($this->z_color()));
+	}
+
+	function a_color()
+	{
+		if ($this->a_color) return $this->a_color;
+		return "#00ff99";
+	}
+
+	function b_color()
+	{
+		if ($this->b_color) return $this->b_color;
+		return "#ffff99";
+	}
+	function c_color()
+	{
+		if ($this->c_color) return $this->c_color;
+		return "#ffcc33";
+	}
+	function z_color()
+	{
+		if ($this->z_color) return $this->z_color;
+		return "#cccccc";
+	}
+	function colorForEval($e)
+	{
+		switch($e)
+		{
+			case 'a' : return $this->a_color();
+			case 'b' : return $this->b_color();
+			case 'c' : return $this->c_color();
+			default:
+				return $this->z_color();
+		}
+		return "#FFFFFF";
+	}
+	function decimalColorForEval($e)
+	{
+		$c = $this->colorForEval($e);
+		
+		return sprintf("%s,%s,%s",
+							hexdec(substr($c,1,2)),
+							hexdec(substr($c,3,2)),
+							hexdec(substr($c,5,2)));
+	}
+	
+	function etablissement()
+	{
+		return CEtablissement::objectWithId($this->etablissement);
+	}
+	function info()
+	{
+		return $this->intitule;
+	}
+	function annee()
+	{
+		if (!$this->annee) return date("Y");
+		return $this->annee;
+	}
+}

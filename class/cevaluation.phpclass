@@ -1,0 +1,370 @@
+<?
+/*
+CREATE TABLE `t_evaluation` (
+	id INT NOT NULL AUTO_INCREMENT,
+	intitule varchar(200),
+	classe int,
+	description TEXT,
+	date_examen datetime,
+	duree int,
+	date_correction datetime,
+	created datetime,
+	creator int,
+	PRIMARY KEY (`id`));
+*/		
+
+class CEvaluation
+{
+	var $id;
+
+	var $intitule;
+	var $classe;
+	var $description;
+	var $date_examen;
+	var $duree;
+	var $date_correction;
+	var $classeur;
+
+	var $created;
+	var $creator;
+	
+	/* class methods */
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CEvaluation::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CEvaluation::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function objectWithId($id)
+	{
+		global $DB;
+		if ($arr = CEvaluation::objectsWithQuery("SELECT * FROM t_evaluation WHERE id=$id"))
+		{
+			return $arr[0];
+		}
+		return null;
+	}
+	function deleteObjectsWithClasse($classe_id)
+	{
+		global $DB;
+		CEvaluationEleve::deleteObjectsWithClasse($classe_id);
+		CElement::deleteObjectsWithClasse($classe_id);
+//		CEvaluationCompetence::deleteObjectsWithClasse($classe_id);
+		$DB->query("DELETE FROM t_evaluation WHERE classe=$classe_id");
+	}
+
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		CEvaluationEleve::deleteWithEvaluation($id);
+		CElement::deleteWithEvaluation($id);
+		$DB->query("DELETE FROM t_evaluation WHERE id=$id");
+	}
+	
+	function objects()
+	{
+		return CEvaluation::objectsWithQuery("select * from t_evaluation order by initule");
+	}
+		
+	function objectWithArray(&$arr)
+	{
+		$u = new CEvaluation();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CEvaluation::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	function deleteNotes()
+	{
+		CEvaluationEleve::deleteWithEvaluation($this->id);
+	}
+	
+	function classeursForClasse($classe_id)
+	{
+		global $DB;
+		return $DB->stringsFromQuery("SELECT DISTINCT classeur FROM t_evaluation WHERE classe = $classe_id ORDER BY classeur");
+	}
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+
+		if (array_key_exists("intitule",$arr))
+			$this->intitule = stripcslashes($arr["intitule"]);
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+		if (array_key_exists("classe",$arr))
+			$this->classe = $arr["classe"];
+		if (array_key_exists("duree",$arr))
+			$this->duree = $arr["duree"];
+
+		if (array_key_exists("classeur",$arr))
+			$this->classeur = stripcslashes($arr["classeur"]);
+
+		if (array_key_exists("date_examen",$arr))
+			$this->date_examen = strtotime($arr["date_examen"]);
+		if (array_key_exists("date_correction",$arr))
+			$this->date_correction = strtotime($arr["date_correction"]);
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+	
+	function objectsForClasse($classe_id)
+	{
+		return CEvaluation::objectsWithQuery("select * from t_evaluation where classe=$classe_id order by classeur asc, date_examen desc");
+	}
+	
+	function date_examen($format="%d/%m/%Y")
+	{
+		if ($this->date_examen) return strftime($format,$this->date_examen);
+		return "";
+	}
+	function duree()
+	{
+		if ($this->duree) return CDateUtil::minutes2Time($this->duree);
+		return "";
+	}
+	function info()
+	{
+		return $this->intitule();
+	}
+	function intitule()
+	{
+		if ($this->intitule) return $this->intitule;
+		return "Nouvelle évaluation";
+	}
+
+	function elements()
+	{
+		return CElement::objectsForEvaluation($this->id);		
+	}
+	function elementWithId($id)
+	{
+		return CElement::objectWithIdAndEvaluation($id,$this->id);
+	}
+	function progressions()
+	{
+		return CElement::objectsForEvaluation($this->id);
+	}
+	
+	function commentaires()
+	{
+		return CEvaluationEleveInfo::objectsForEvaluation($this->id);
+	}
+	
+/*
+	function competences()
+	{
+		return CEvaluationCompetence::objectsForEvaluation($this->id);
+	}
+*/
+	function competencesById()
+	{
+		return CEvaluationCompetence::objectsForEvaluation($this->id,"id");
+	}
+
+	function notes()
+	{
+		return CEvaluationEleve::objectsForEvaluation($this->id);
+	}
+	function notesByEleveElements()
+	{
+		$res = array();
+		foreach($this->notes() as $o)
+		{
+			$res[$o->eleve . "-" . $o->competence] = $o;
+		}
+		return $res;
+	}
+	
+	
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("INSERT INTO t_evaluation (intitule,classe,description,date_examen,duree,date_correction,classeur,creator,created) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,NOW())",
+								$DB->STRING($this->intitule),
+								$DB->INT($this->classe),
+								$DB->STRING($this->description),
+								$DB->DATE($this->date_examen),
+								$DB->INT($this->duree),
+								$DB->DATE($this->date_correction),
+								$DB->STRING($this->classeur),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->id = $DB->getLastID();
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	function update()
+	{
+		if (!$this->id) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_evaluation SET intitule = %s, description = %s, date_examen = %s, duree = %s, date_correction = %s, classeur = %s WHERE id = %s",
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->description),
+								$DB->DATE($this->date_examen),
+								$DB->INT($this->duree),
+								$DB->DATE($this->date_correction),
+								$DB->STRING($this->classeur),
+								$DB->INT($this->id));
+			$DB->query($query);
+		}
+	}
+	
+	function modesCalcul()
+	{
+		return array("STANDARD" =>	"Par seuils d’acquisition (standard)",
+					"NOTES" => "Par points sur un total de :");
+	}
+
+	function del()
+	{
+		CEvaluation::deleteObjectWithId($this->id);
+	}
+	
+	function classe()
+	{
+		return CClasse::objectWithId($this->classe);
+	}
+	
+	
+	function export($results=false)
+	{
+		header("Content-type: text/xml");
+		header(sprintf('Content-Disposition: attachment; filename="%s.xml"',$this->intitule));
+		echo "<?xml version='1.0' ?>\n";
+		echo "<?xml-stylesheet href=\"https://www.mezeval.fr/evaluation.xsl\" type=\"application/xml\"?>\n";
+		
+		$this->print_xml(0,$results);
+	}
+	
+	function print_xml($deep=0,$results=false)
+	{
+		printf("%s<EVALUATION date='%s' intitule='%s' duree='%s' classeur='%s' description='%s'>\n",
+					str_repeat("\t",$deep),
+					$this->date_examen("%Y%m%d"),
+					urlencode($this->intitule),
+					$this->duree(),
+					$this->classeur,
+					urlencode($this->description));
+		$deep++;
+		$elems = $this->elements();
+		if (count($elems) > 0)
+		{
+			printf("%s<ELEMENTS>\n",str_repeat("\t",$deep));
+			$deep++;
+			foreach($this->elements() as $e) $e->print_xml($deep,$results);
+			$deep--;
+			printf("%s</ELEMENTS>\n",str_repeat("\t",$deep));
+		}
+		foreach($this->commentaires() as $com) $com->print_xml($deep);
+		
+		$deep--;
+		printf("%s</EVALUATION>\n",str_repeat("\t",$deep));
+	}
+	
+	var $tmp_xml_object;
+	function xmlBaseStartHandler($parser, $name, $attr)
+	{
+		switch($name)
+		{
+			case "EVALUATION":
+				if ($attr["DUREE"]) $this->duree = CDateUtil::userTimeToMinutes($attr["DUREE"]);
+				if ($attr["INTITULE"]) $this->intitule = urldecode($attr["INTITULE"]);
+				if ($attr["CLASSEUR"]) $this->classeur = urldecode($attr["CLASSEUR"]);
+				if ($attr["DESCRIPTION"]) $this->description = urldecode($attr["DESCRIPTION"]);
+				$this->update();
+				break;
+			case "ELEMENT":
+				$x = new CElement;
+				$x->evaluation = $this->id;
+				$x->code_socle = $attr["SOCLE"];
+				$x->mode = $attr["MODE"];
+				$x->valeur_max = $attr["VALEUR_MAX"];
+				$x->description = urldecode($attr["DESCRIPTION"]);
+				$x->create($DB);
+				$this->tmp_xml_object = $x;
+				break;
+		}
+	}
+	function xmlBaseEndHandler($parser, $name)
+	{
+		switch($name)
+		{
+			case "DESCRIPTION":
+				$this->description = urldecode($this->tmp_xmldata);
+				break;
+			case "ELEMENT":
+				$this->tmp_xml_object = null;
+				break;
+		}
+		$this->tmp_xmldata = "";
+	}
+
+	var $tmp_xmldata;
+	function xmlBaseDataHandler($parser, $data)
+	{
+		$this->tmp_xmldata .= $data;
+	}
+	
+	function import($filename)
+	{
+		if ($fp = fopen($filename,"r"))
+		{
+			$parser = xml_parser_create();
+ 			xml_set_object($parser, $this);
+        	xml_set_element_handler($parser, 'xmlBaseStartHandler', 'xmlBaseEndHandler');
+			while (($data = fread($fp, 8192))) {
+				if (!xml_parse($parser, $data, feof($fp))) {
+					CDebug::TRACE('XML error at line ' . xml_get_current_line_number($parser) . ' column '. xml_get_current_column_number($parser));
+					return false;
+				}
+			}
+			return true;
+		} else {
+			echo "erreur ouverture de fichier";
+			return false;
+		}
+	}
+	function date()
+	{
+		return strftime("%d/%m/%Y",$this->date_examen);
+	}
+}

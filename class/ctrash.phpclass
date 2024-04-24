@@ -1,0 +1,73 @@
+<?
+
+
+class CTrash
+{
+	var id; // database unique id
+	var classe; // classe id
+	var date; // date of o
+	var description; // content description
+	var data; // data
+	
+	
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = CTrash::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithArray(&$arr)
+	{
+		$u = new CTrash();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		
+		
+	}
+	
+	function objectsWithClasse($classe_id)
+	{
+		return 
+	}
+
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("intitule",$arr))
+			$this->intitule = stripcslashes($arr["intitule"]);
+		if (array_key_exists("description",$arr))
+			$this->description = stripcslashes($arr["description"]);
+		if (strpos($this->description,"\\"))
+			$this->description = stripcslashes($this->description);
+		if (array_key_exists("eleve",$arr))
+			$this->eleve = $arr["eleve"];
+		if (array_key_exists("periode",$arr))
+			$this->periode = $arr["periode"];
+
+		if (array_key_exists("date_bilan",$arr))
+			$this->date_bilan = strtotime($arr["date_bilan"]);
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+		$this->stored = true;
+	}
+	
+}

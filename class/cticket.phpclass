@@ -1,0 +1,354 @@
+<? 
+/*
+CREATE TABLE `t_ticket` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`tgroup`  int,
+	`tuser`  int,
+	tmodule	varchar(200),
+	tzone varchar(200),
+	tvalue	text,
+	created	datetime,
+	revocated datetime,
+	PRIMARY KEY (`id`));
+	
+CREATE UNIQUE INDEX index_uniq_ticket ON t_ticket (tgroup,tuser,tmodule,tzone,tvalue(20));
+
+	"ticket statique" =>
+	{
+		"ADMIN" => { "module_name" => "READ", "module_name" => "DENY", "module_name" => "WRITE"};
+		"GUEST" => { "module_name" => "READ", "module_name" => "DENY", "module_name" => "WRITE"};
+		"USER" => { "module_name" => "READ", "module_name" => "DENY", "module_name" => "WRITE"};
+	}
+*/
+$CTICKET_STATIC_TICKETS = null;
+
+class CTicket
+{
+	var $id;
+	var $group;
+	var $user;
+	var $module;
+	var $zone;
+	var $value;
+	var $created;
+	var $revocated;
+	
+	/* class methods */
+	function setStaticTickets($arr)
+	{
+		global $CTICKET_STATIC_TICKETS;
+		$CTICKET_STATIC_TICKETS = $arr;
+	}
+			
+	function objectsWithQuery($query)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				$res[] = self::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	function deleteObjectWithId($id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_ticket WHERE id=$id");
+	}
+	
+	function allObjects()
+	{
+		return self::objectsWithQuery("select * from t_ticket order by tmodule");
+	}
+		
+	function objectWithArray(&$arr)
+	{
+		$u = new CTicket();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = self::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+	
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("id",$arr))
+			$this->id = $arr["id"];
+		if (array_key_exists("tgroup",$arr))
+			$this->group = $arr["tgroup"];
+		if (array_key_exists("tuser",$arr))
+			$this->user = $arr["tuser"];
+		if (array_key_exists("tmodule",$arr))
+			$this->module = stripcslashes($arr["tmodule"]);
+		if (array_key_exists("tzone",$arr))
+			$this->zone = stripcslashes($arr["tzone"]);
+		if (array_key_exists("tvalue",$arr))
+			$this->value = stripcslashes($arr["tvalue"]);
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+		if (array_key_exists("revocated",$arr))
+			$this->revocated = strtotime($arr["revocated"]);
+	}
+	
+	function update()
+	{
+	}
+	
+	
+	function create()
+	{
+		global $DB;
+		$query = "INSERT INTO  t_ticket  (tgroup,tuser,tmodule,tzone,tvalue,created,revocated) VALUES " .
+				" (". $DB->ID($this->group) . ",".
+				" ". $DB->ID($this->user) . ",".
+				" ". $DB->STRING($this->module) . ",".
+				" ". $DB->STRING($this->zone) . ",".
+				" ". $DB->STRING($this->value) . ",".
+				" now(),null)";
+		$res = $DB->query($query);
+		if ($res)
+		{
+			$this->id = $DB->getLastID();
+			return true;
+		}
+		return false;
+	}
+	
+	function del()
+	{
+		self::deleteObjectWithId($this->id);
+	}
+	
+	function ticketsOfGroup($group_id)
+	{
+		return  self::objectsWithQuery("select * from t_ticket where tgroup=$group_id order by tmodule,tvalue");
+	}
+
+	function ticketsOfUser($user_id)
+	{
+		return  self::objectsWithQuery("select t_ticket.* from t_ticket where user = $user_id " .
+					" UNION ,select t_ticket.* from t_ticket, t_usergroups_user where t_ticket.tgroup = t_usergroups_user.id AND t_usergroups_user.tuser = $user_id order by tmodule,tvalue");
+	}
+	
+	function createGroupTicket($group_id,$module,$key=null,$val=null)
+	{
+		$t = new CTicket();
+		$t->group = $group_id;
+		$t->module = $module;
+		$t->zone = $key;
+		$t->value = $val;
+		if ($t->create())
+			return $t;
+		else return null;
+	}
+	function deleteGroupTicket($group_id,$module,$val=null,$zone=null)
+	{
+		global $DB;
+		$query = "DELETE FROM t_ticket WHERE tgroup= $group_id AND tmodule='$module'";
+		if ($val) $query .= " AND tvalue='$val'";
+		if ($zone) $query .= " AND tzone='$zone'";
+		return $DB->query($query);
+	}
+	
+	function createUserTicket($user_id,$module,$key=null,$val=null)
+	{
+		$t = new CTicket();
+		$t->user = $user_id;
+		$t->module = $module;
+		$t->zone = $key;
+		$t->value = $val;
+		if ($t->create())
+			return $t;
+		else return null;
+	}
+	function createAccessForGroupToModule($group_id,$module,$mode="ACCESS_READ")
+	{
+		CDebug::TRACE(0,"CTicket::createAccessForGroupToModule($group_id,$module,$mode)");
+		self::deleteGroupTicket($group_id,$module,null,"MODULE_ACCESS");
+		return self::createGroupTicket($group_id,$module,"MODULE_ACCESS",$mode);
+	}
+	function deleteAccessForGroupToModule($group_id,$module)
+	{
+		return self::deleteGroupTicket($group_id,$module);
+	}
+	
+	function checkGroupAccessToModule($group_id,$module)
+	{
+		CDebug::TRACE(0,"CTicket::checkGroupAccessToModule($group_id,$module)");
+		global $DB;
+		$res = $DB->oneValue("SELECT COUNT(id) FROM t_ticket WHERE tgroup=$group_id AND tmodule='$module' AND tzone ='MODULE_ACCESS' AND tvalue != 'MODULE_DENY'");
+		return ($res > 0);
+	}
+	function accessModeForGroupToModule($group_id,$module)
+	{
+		CDebug::TRACE(0,"CTicket::checkGroupAccessToModule($group_id,$module)");
+		global $DB;
+		$res = $DB->oneValue("SELECT tvalue FROM t_ticket WHERE tgroup=$group_id AND tmodule='$module' AND tzone ='MODULE_ACCESS'");
+		return $res;
+	}
+	
+	function getStaticUserMode()
+	{
+		if (CUser::is_logged())
+		{
+			if (CUser::isAdministrator()) return "ADMIN";
+			return "USER";
+		} else return "GUEST";
+	}
+
+	function checkUserAccessToStaticModule($user_id,$module)
+	{
+		global $CTICKET_STATIC_TICKETS;
+		$ref = CTicket::getStaticUserMode();
+		if ($z = $CTICKET_STATIC_TICKETS[$ref])
+		{
+			$mode = $z[$module];
+			CDebug::TRACE(0,"CTicket::checkUserAccessToStaticModule($user_id,$module) => $mode");
+			if ($mode == "READ" || $mode == "WRITE") return true;
+		}
+			CDebug::TRACE(0,"CTicket::checkUserAccessToStaticModule($user_id,$module) => false");
+		return false;
+	}
+	function checkUserWriteToStaticModule($user_id,$module)
+	{
+		global $CTICKET_STATIC_TICKETS;
+		$ref = CTicket::getStaticUserMode();
+		if ($z = $CTICKET_STATIC_TICKETS[$ref])
+		{
+			$mode = $z[$module];
+			CDebug::TRACE(0,"CTicket::checkUserWriteToStaticModule($user_id,$module) => $mode");
+			if ($mode == "WRITE") return true;
+		}
+		CDebug::TRACE(0,"CTicket::checkUserWriteToStaticModule($user_id,$module) => false");
+		return false;
+	}
+
+	
+	function checkUserAccessToModule($user_id,$module)
+	{
+		global $CTICKET_STATIC_TICKETS;
+		if ($CTICKET_STATIC_TICKETS) return CTicket::checkUserAccessToStaticModule($user_id,$module);
+		
+		CDebug::TRACE(0,"CTicket::checkUserAccessToModule($group_id,$module)");
+		global $DB;
+		$res = $DB->oneValue("SELECT COUNT(id) FROM t_ticket,t_usergroups_user " .
+				" WHERE t_ticket.tgroup = t_usergroups_user.tgroup " . 
+				" AND t_usergroups_user.tuser = $user_id " .
+				" AND t_ticket.tmodule='$module' AND t_ticket.tvalue != 'MODULE_DENY'");
+		return ($res > 0);
+	}
+	function checkUserWriteToModule($user_id,$module)
+	{
+		global $CTICKET_STATIC_TICKETS;
+		if ($CTICKET_STATIC_TICKETS) return CTicket::checkUserWriteToStaticModule($user_id,$module);
+		CDebug::TRACE(0,"CTicket::checkUserAccessToModule($group_id,$module)");
+		global $DB;
+		$res = $DB->oneValue("SELECT COUNT(id) FROM t_ticket,t_usergroups_user " .
+				" WHERE t_ticket.tgroup = t_usergroups_user.tgroup " . 
+				" AND t_usergroups_user.tuser = $user_id " .
+				" AND t_ticket.tmodule='$module' AND t_ticket.tvalue = 'ACCESS_UPDATE'");
+		return ($res > 0);
+	}
+	
+	function updateZoneForUserModuleValue($new_zone,$user_id,$module,$value)
+	{
+		global $DB;
+		$q = sprintf("UPDATE t_ticket SET tzone = %s WHERE tuser=%s AND tmodule=%s AND tvalue=%s",
+						$DB->STRING($new_zone),
+						$DB->ID($user_id),
+						$DB->STRING($module),
+						$DB->STRING($value));
+		$DB->query($q);
+	}
+	
+	function deleteTicketsforUsers(& $arr)
+	{
+		global $DB;
+		$DB->query("delete from t_ticket where tuser IN " . $DB->INT_LIST($arr));
+	}
+	function existForModule($module)
+	{
+		global $DB;
+		$n =  $DB->oneValue("select count(id) from t_ticket where tmodule='$module'");
+		return $n > 0;
+	}
+	
+	function valueForUserAndModule($user_id,$module)
+	{
+		return $DB->oneValue("select value from t_ticket where tmodule='$module' AND tuser=$uer_id");
+	}
+	
+	function setValueForUserAndModule($user_id,$module,$value)
+	{
+		global $DB;
+		$DB->query("DELETE FROM  t_ticket where tuser=$user_id AND tmodule='$module'");
+		$DB->query("INSERT INTO t_ticket (tuser,tmodule,tvalue) values ($user_id,'$module',". $DB->STRING($value) . ")");
+	}
+	
+	function valueForGroupAndModule($group_id,$module)
+	{
+		return $DB->oneValue("select value from t_ticket where tmodule='$module' and tgroup=$group_id");
+	}
+	function setValueForGroupAndModule($group_id,$module)
+	{
+		$DB->query("DELETE FROM  t_ticket where tgroup=$group_id AND tmodule='$module'");
+		$DB->query("INSERT INTO t_ticket (tgroup,tmodule,tvalue) values ($group_id,'$module',". $DB->STRING($value) . ")");
+	}
+
+	function valuesForUserAndModule($user_id,$module)
+	{
+		global $DB;
+		return $DB->stringValues("(SELECT value FROM t_ticket WHERE tmodule='$module' AND tuser=$user_id)" .
+						" UNION   (SELECT t_ticket.value FROM t_ticket,t_usergroups_user WHERE t_usergroups_user.tgroup = t_ticket.group AND t_usergroups_user.tuser = $user_id AND t_ticket.tmodule='$module')");
+	}
+	
+	function ticketsForModuleAndValue($module,$value)
+	{
+		global $DB;
+		return 	self::objectsWithQuery("SELECT * FROM t_ticket WHERE tmodule='$module' AND tvalue=". $DB->STRING($value));
+	}
+	
+	
+	function ticketsForModuleAndZone($module,$zone)
+	{
+		global $DB;
+		return self::objectsWithQuery("SELECT * FROM t_ticket WHERE tmodule='$module' AND tzone=". $DB->STRING($zone));
+	}
+	
+	function groupe()
+	{
+		if ($this->group)	return CUserGroup::objectWithId($this->group);
+		return null;
+	}
+	
+	function configValues()
+	{
+		$res = array();
+		if (isset($GLOBALS["TICKETS_VALUES_FILE"]))
+			$file = $GLOBALS["TICKETS_VALUES_FILE"];
+		else
+			$file = getenv("DOCUMENT_ROOT") . "/../config/tickets.conf";
+		if (is_file($file))
+		{
+			if ($f = file_get_contents($GLOBALS["TICKETS_VALUES_FILE"]))
+			{
+				foreach(explode("\n",$f) as $l)
+				{
+					if ($l) $res[] = explode(";",$l);
+				}
+			}
+		}
+		return $res;
+	}	
+}

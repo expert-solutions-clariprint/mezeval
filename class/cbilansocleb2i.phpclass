@@ -1,0 +1,24 @@
+<?
+
+
+class CBilanSocleB2i extends CBilanSocle
+{
+	var $db_table = "t_bilan_socle_b2i";
+
+
+	function socle()
+	{
+		$e = $this->eleve();
+		$c = $e->classe();
+		return $c->b2i();
+	}
+
+	function deleteObjectsWithClasse($classe_id)
+	{
+		CBilanSocleElement::deleteObjectsWithClasse($classe_id);
+		global $DB;
+		$DB->query(sprintf("DELETE t_bilan_socle.* FROM t_bilan_socle,t_eleve WHERE t_bilan_socle.eleve = t_eleve.id AND t_eleve.classe= %d",$classe_id));
+	}
+
+	
+}

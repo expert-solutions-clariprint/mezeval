@@ -1,0 +1,232 @@
+<?
+/*
+CREATE TABLE `t_bilan_progression_elements` (
+	eleve int ,
+	periode int,
+	progression int,
+	affichage int,
+	commentaire TEXT,
+	evaluation varchar(5),
+	created datetime,
+	creator int,
+	PRIMARY KEY (eleve,periode,progression),
+	CONSTRAINT FOREIGN KEY (eleve) REFERENCES t_eleve (id) ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY (periode) REFERENCES t_periode (id) ON DELETE CASCADE,
+	CONSTRAINT FOREIGN KEY (progression) REFERENCES  t_progression (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+*/
+
+class CBilanProgressionElement
+{
+	var $eleve;
+	var $periode;
+	var $progression;
+	var $commentaire;
+	var $affichage;
+	var $evaluation;
+	var $created;
+	var $creator;
+	
+	/* class methods */
+			
+	function objectsWithQuery($query,$key=null)
+	{
+		global $DB;
+		$res = array();
+		$r = $DB->query($query);
+		if ($r)
+		{
+			while ($tmp  = $DB->getRow($r))
+			{
+				if ($key) $res[$tmp[$key]] = CBilanProgressionElement::objectWithArray($tmp);
+				else $res[] = CBilanProgressionElement::objectWithArray($tmp);
+			}
+		}
+		return $res;
+	}
+	
+	function objectWithQuery($query)
+	{
+		$r = CBilanProgressionElement::objectsWithQuery($query);
+		if (count($r) > 0) return $r[0];
+		return null;
+	}
+	
+	function deleteForEleve($eleve_id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_bilan_progression_elements WHERE eleve=$eleve_id");
+	}
+	function deleteForPeriode($periode_id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_bilan_progression_elements WHERE periode=$periode_id");
+	}
+	function deleteForEleveAndPeriode($eleve_id,$periode_id)
+	{
+		global $DB;
+		$DB->query("DELETE FROM t_bilan_progression_elements WHERE periode=$periode_id and eleve=$eleve_id");
+	}
+
+	function deleteObjectsWithClasse($classe_id)
+	{
+		global $DB;
+		$DB->query("DELETE t_bilan_progression_elements.* FROM t_bilan_progression_elements,t_eleve	 WHERE t_bilan_progression_elements.eleve = t_eleve.id AND t_eleve.classe= $classe_id");
+	}
+
+	function createForElevePeriodeProgressionWithEvaluationCommentaireAffichage($eleve_id,$periode_id,$progression_id,$evaluation_str,$commentaire_str,$affichage_int)
+	{
+		$x = new CBilanProgressionElement();
+		$x->eleve = $eleve_id;
+		$x->periode = $periode_id;
+		$x->progression = $progression_id;
+		$x->commentaire = $commentaire_str;
+		$x->affichage = $affichage_int;
+		$x->evaluation = $evaluation_str;
+	}
+	
+	function objectsForEleveAndPeriodeByProgression($eleve_id,$periode_id,$pour_affichage = false)
+	{
+		$q = "select * from t_bilan_progression_elements where eleve=$eleve_id and periode=$periode_id";
+		if ($pour_affichage) $q .= " and affichage=1";
+		return CBilanProgressionElement::objectsWithQuery($q,"progression");
+	}
+	
+	function objectForElevePeriodeProgression($eleve_id,$periode_id,$progression_id)
+	{
+		return CBilanProgressionElement::objectsWithQuery(sprintf("SELECT t_bilan_progression_elements
+			WHERE eleve=%d
+			AND periode=%d
+			AND progression=%d",$eleve_id,$periode_id,$progression_id));
+	}
+	
+	function resultsForPeriodeProgression($periode_id,$progression_id)
+	{
+		global $DB;
+		$res = array();
+		$q = sprintf("SELECT evaluation,count(eleve) FROM t_bilan_progression_elements WHERE periode=%d AND progression=%d GROUP BY evaluation ",$periode_id,$progression_id );
+		if ($rs = $DB->query($q))
+		{
+			while($row = $DB->getRow($rs))
+				$res[$row[0]] = $row[1];
+		}
+		return $res;
+	}
+
+/*	
+	function objects()
+	{
+		return CBilanProgressionElement::objectsWithQuery("select * from t_bilan_progression order by date_bilan desc");
+	}
+*/
+	function objectWithArray(&$arr)
+	{
+		$u = new CBilanProgressionElement();
+		$u->initWithArray($arr);
+		return $u;
+	}
+
+	function createObjectWithArray(&$arr)
+	{
+		$u = CBilanProgressionElement::objectWithArray($arr);
+		if ($u->create()) return $u;
+		else return null;
+	}
+
+	/* object method */
+	
+	function initWithArray(&$arr)
+	{
+		if (array_key_exists("eleve",$arr))
+			$this->eleve = $arr["eleve"];
+
+		if (array_key_exists("periode",$arr))
+			$this->periode = $arr["periode"];
+
+		if (array_key_exists("progression",$arr))
+			$this->progression = $arr["progression"];
+
+		if (array_key_exists("commentaire",$arr))
+			$this->commentaire = $arr["commentaire"];
+
+		if (array_key_exists("affichage",$arr))
+			$this->affichage = $arr["affichage"];
+
+		if (array_key_exists("evaluation",$arr))
+			$this->evaluation = $arr["evaluation"];
+
+		if (array_key_exists("creator",$arr))
+			$this->creator = $arr["creator"];
+		if (array_key_exists("created",$arr))
+			$this->created = strtotime($arr["created"]);
+	}
+		
+	function create()
+	{
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("INSERT INTO t_bilan_progression_elements (
+						eleve,periode,progression,commentaire,
+						affichage,evaluation,
+						created,creator)
+						VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())",
+								$DB->INT($this->eleve),
+								$DB->INT($this->periode),
+								$DB->INT($this->progression),
+								$DB->STRING($this->commentaire),
+								$DB->INT($this->affichage),
+								$DB->STRING($this->evaluation),
+								$DB->INT($u->id));
+			$res = $DB->query($query);
+			if ($res)
+			{
+				$this->created = strtotime("now");
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
+	function print_xml($deep)
+	{
+		if($this->evaluation || $this->commentaire)
+		printf("%s<ELEMENT_BILAN_PROGRESSION progression='section_%s' commentaire='%s' affichage='%s' evaluation='%s'/>\n",
+				str_repeat("\t",$deep),
+				$this->progression,
+				urlencode($this->commentaire),
+				$this->affichage,
+				$this->evaluation);
+	}
+/*
+	function update()
+	{
+		if (!$this->created) return $this->create();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			$query = sprintf("UPDATE t_bilan_progression_elements SET intitule = %s, description = %s, date_bilan = %s WHERE eleve = %s and periode = %s",
+								$DB->STRING($this->intitule),
+								$DB->STRING($this->description),
+								$DB->DATE($this->date_bilan),
+								$DB->INT($this->eleve),
+								$DB->INT($this->periode));
+			$DB->query($query);
+		}
+
+	}
+	function classe()
+	{
+		return CClasse::objectWithId($this->classe);
+	}
+	function periode()
+	{
+		return CPeriode::objectWithId($this->periode);
+	}
+	function eleve()
+	{
+		return CEleve::objectWithId($this->eleve);
+	}
+*/
+}

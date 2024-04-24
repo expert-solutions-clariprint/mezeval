@@ -1,0 +1,339 @@
+<?
+
+class CDateUtil {
+
+	//-----------------------------------------------------------------------------
+	//					GESTION DES HEURES
+	//-----------------------------------------------------------------------------
+
+	// "00:00:00" -> "00:00"
+	function shortTime($t)
+	{
+		if (!$t) return "&nbsp;";
+		$l = explode(":",$t);
+		return $l[0] . ":" . $l[1];
+	}
+
+	function timeToMinutes($t)
+	{
+		$t = getdate($t);
+		return $t["hours"] * 60 + $t["minutes"];
+	}
+
+	function userTimeToMinutes($t)
+	{
+		$l = explode(":",CDateUtil::userTime($t));
+		return (60 * $l[0]) + $l[1];
+	}
+
+	function minutesToTime($m)
+	{
+		return mktime(0,$m);
+	}
+
+	// Convertie une heure utilisateur en heure normale
+	// "XX" -> "0:XX:00"
+	// "XXX" -> "X:XX:00"
+	// "XX:X" -> "XX:0X:00"
+	// "XX:XX" -> "XX:XX:00"
+	function userTime($t, $timestamp=false)
+	{
+		$minutes = 0;
+		$heures = 0;
+		if (substr_count($t,":") > 0)
+		{
+			$l = explode(":",$t);
+			$heures = (int) $l[0];
+			$minutes = (int) $l[1];
+		} else
+		{
+			$minutes= (int) substr($t,-2);
+			$heures= (int) substr($t,0,-2);
+		}
+		if ($timestamp) return mktime($heures,$minutes);  // xp to test
+		return sprintf("%02d:%02d:00",$heures,$minutes);
+	}
+
+	function unixTime($t)
+	{
+		return CDateUtil::userTime($t, true);
+	}
+
+	// renvoie l'heure d'une date
+	function H($heure)
+	{
+		list($h,$m,$s) = sscanf($heure,"%d:%d:%d");
+		return $h;
+	}
+
+	// renvoie en sur la base heure : 08:30:00 => 8.5 
+	function BaseHeure($heure)
+	{
+		list($h,$m,$s) = sscanf($heure,"%d:%d:%d");
+		return $h + $m / 60 + $s / 3600;
+	}
+
+	// renvoie les minutes d'une date
+	function M($heure)
+	{
+		list($h,$m,$s) = sscanf($heure,"%d:%d:%d");
+		return $m;
+	}
+
+	function getUserTime($d,$h_sep = ":")
+	{
+		$l = explode(":",$d); return $l[0] . $h_sep .$l[1];
+	}
+
+	//renvoie un heure avec un nombre de minutes et d'heures
+	// (cas ou le nombre de minutes > 60)
+	function getHeure($h,$m)
+	{
+		$tmp += $m % 60;
+		$h += (int)(($m - $tmp) / 60);
+		$m = $tmp;
+		return "$h:$m:00";
+	}
+
+	function timeDiff($d1,$d2)
+	{
+		list($h1,$m1) = sscanf($d1,"%d:%d");
+		list($h2,$m2) = sscanf($d2,"%d:%d");
+		$h = $h1 - $h2;
+		$m = $m1 - $m2;
+		$s = 0;
+		if ($m < 0) 
+		{
+			$m += 60;
+			$h -= 1;
+		}
+		if (strlen($m) < 2) $m = "0".$m;
+		return "$h:$m";
+	}
+
+
+
+	function echotime($t)
+	{
+		global $ECHOTIME_DECIMAL_MODE;
+		if (!$t) { printf("&nbsp;"); return;}
+		if ($ECHOTIME_DECIMAL_MODE) { 
+			echo(number_format(($t / 60),2,",",""));
+			// printf("%01,2f",); 
+			return;};
+		
+		$minutes = (int) ($t);
+		$heures = (int) ($minutes / 60);
+		$minutes = $minutes - ($heures * 60);
+		printf("%d:%02d",$heures,$minutes);
+	}
+	function minutes2Time($t,$symb = ":")
+	{
+		if (!$t) { return "00" .$symb ."00";}
+		$minutes = (int) ($t);
+		$heures = (int) ($minutes / 60);
+		$minutes = $minutes - ($heures * 60);
+		return sprintf("%d". $symb . "%02d",$heures,$minutes);
+	}
+
+
+	//-----------------------------------------------------------------------------
+	//					GESTION DES DATES
+	//-----------------------------------------------------------------------------
+
+	function getNomJour($date_ts)
+	{
+		$j = strftime("%w",$date_ts);
+		switch($j)
+		{
+			case 1 : $nom = "lundi";	break;
+			case 2 : $nom = "mardi";	break;
+			case 3 : $nom = "mercredi";	break;
+			case 4 : $nom = "jeudi";	break;
+			case 5 : $nom = "vendredi";	break;
+			case 6 : $nom = "samedi"; 	break;
+			case 0 : $nom = "dimanche"; break;
+		}
+		return $nom;
+	}
+
+	function getLundi($date_timestamp)
+	{
+		$j = date("w",$date_timestamp) - 1;
+		return mktime(0,0,0,date("m",$date_timestamp), date("d",$date_timestamp) - $j, date("Y",$date_timestamp) );
+	}
+
+
+	// Convertie une date utilisateur en date normale
+	// "XXXX" -> "XX/XX/[Année courante]"
+	// "XXXXXX" -> "XX/XX/XX"
+	// "XX/XX" -> "XX/XX/[Année courante]"
+	// "XX/XX/XX" -> "XX/XX/XX"
+	// "XX/XX/XX" -> "XX/XX/XXXX"
+	// si - ou T utilise strtotiem php function
+	function userDate($t, $return_timestamp=false)
+	{
+		CDebug::TRACE(TUTILS,"userDate($t)");
+		if (substr_count($t,"-") > 0 || substr_count($t,"T") > 0)
+		{
+			if ($return_timestamp) return strtotime($t);
+			return date("Y-m-d",strtotime($t));
+		}
+		$annee = date("Y");
+		$mois = date("m");
+		$jour = date("d");
+		if(substr_count($t,"/") == 0)
+		{
+			$ln = strlen($t);
+			if ($ln == 2)
+			{
+				$jour = substr($t,0,2);
+			}
+			else if ($ln == 4)
+			{
+				$jour = substr($t,0,2);
+				$mois = substr($t,2,2);
+			} else if ($ln == 6)
+			{
+				$jour = substr($t,0,2);
+				$mois = substr($t,2,2);
+				$annee = substr($t,-2);
+			} else if ($ln == 8)
+			{
+				$jour = substr($t,0,2);
+				$mois = substr($t,2,2);
+				$annee = substr($t,-4);
+			}
+		} elseif (substr_count($t,"/") == 1)
+		{
+				$l = explode("/",$t);
+				$jour = $l[0];
+				$mois = $l[1];
+		} elseif (substr_count($t,"/") == 2)
+		{
+				$l = explode("/",$t);
+				$jour = $l[0];
+				$mois = $l[1];
+				$annee = $l[2];
+		}
+		CDebug::TRACE(TUTILS,"---> $jour/$mois/$annee");
+
+		if ($return_timestamp) return mktime(0,0,0,$mois,$jour,$annee);
+
+		return date("Y-m-d",mktime(0,0,0,$mois,$jour,$annee));
+	}
+
+	function unixDate($d)
+	{
+		return CDateUtil::userDate($d,true);
+	}
+
+
+	// Formate une date US en date Francaise
+	function formatFDate($date) { return date("d/m/Y",$date); }
+
+	function formatFDateLong($date,$aInserer = " ") { return getNomJour($date) . $aInserer . date("d/m/Y",$date);}
+
+	// Ajout de dates
+	function timeAdd($t1,$t2)
+	{
+		return dateAdd($t1,$t2);
+	}
+
+	function dateAdd($d1,$d2)
+	{
+		list($h1,$m1,$s1) = sscanf($d1,"%d:%d:%d");
+		list($h2,$m2,$s2) = sscanf($d2,"%d:%d:%d");
+		$h = $h1 + $h2;
+		$m = $m1 + $m2;
+		$s = 0;
+		if ($m >= 60) 
+		{
+			$m -= 60;
+			$h += 1;
+		}
+		if (strlen($m) < 2) $m = "0".$m;
+
+		return "$h:$m:00";
+	}
+
+
+
+	function dateAddInterval($interval, $number, $date,$timestamp_mode = false)
+	{
+	//	echo "dateAddInterval($interval, $number, $date)";
+		if (!$timestamp_mode) $date = strtotime($date);
+		$date_time_array = getdate($date);
+		$hours = $date_time_array["hours"];
+		$minutes = $date_time_array["minutes"];
+		$seconds = $date_time_array["seconds"];
+		$month = $date_time_array["mon"];
+		$day = $date_time_array["mday"];
+		$year = $date_time_array["year"];
+		switch ($interval) {
+			case "yyyy":
+				$year +=$number;
+				break;
+			case "y":
+			case "q":
+				$year +=($number*3);
+				break;
+			case "m":
+				$month +=$number;
+				break;
+			case "d":
+			case "w":
+				$day+=$number;
+				break;
+			case "ww":
+				$day+=($number*7);
+				break;
+			case "h":
+				$hours+=$number;
+				break;
+			case "n":
+				$minutes+=$number;
+				break;
+			case "s":
+				$seconds+=$number;
+				break;
+		}
+		$timestamp = mktime($hours ,$minutes, $seconds,$month ,$day, $year);
+
+		if (!$timestamp_mode) return date("Y-m-d",$timestamp);
+		return $timestamp;
+	}
+
+	// Test si la date n'est pas un jour feriÈ
+	function jourFerie($t)
+	{
+		// samedi ou dimanche
+		$w = date("w",$t); // jour de la semaine
+		if ($w == 0 ) return true;  // dimanche
+		if ($w == 6 ) return true;  // samedi
+
+		$d = date("d",$t); // jour du mois
+		$n = date("n",$t); // num du mois
+		if ($d == 1 & $n == 1) return true;		// 1er janvier
+		if ($d == 1 & $n == 5) return true;		// 1er mai
+		if ($d == 8 & $n == 5) return true;		// 8 mai
+		if ($d == 14 & $n == 7) return true;	// 14 Juillet
+		if ($d == 15 & $n == 8) return true;	// 15 Aout
+		if ($d == 1 & $n == 11) return true;	// 1er novembre
+		if ($d == 11 & $n == 11) return true;	// 11 novembre
+		if ($d == 25 & $n == 12) return true;	// 25 Decembre Noel
+
+		return false;
+	}
+	function isoDateToUnix($str)
+	{
+		$y = substr($str,0,4);
+		$m = substr($str,4,2);
+		$d = substr($str,6,2);
+		return mktime(0 ,0,0,$m ,$d, $y);
+;	}
+	function isoDate($ts)
+	{
+		return strftime("%Y%m%d",$ts);
+	}
+}

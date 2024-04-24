@@ -1,0 +1,41 @@
+<?
+class CPdfReader
+{
+	function nextStream($handle,$compressed)
+	{
+		$data = "";
+		$end = false;
+		$onstream = false;
+		while(!$end)
+		{
+			$line = fgets($handle);
+			if ($line == "endstream\n") 
+			{
+				$end = true;
+			} else if ($onstream)
+				$data .= $line;
+			else if ($line == "stream\n") $onstream = true;
+		}
+		if ($compressed) return gzuncompress($data);
+		return $data;
+	}
+	function fromFile($filename)
+	{
+		$handle = fopen($filename,"rb");
+		if ($handle)
+		{
+			while (!feof($handle))
+			{
+				$line = fgets($handle);
+				if(substr_compare($line,"<</Type /EmbeddedFile",0,21) == 0)
+				{
+					$compress = false;
+					if (strstr($line,"FlateDecode") != "") $compress = true;
+					$res = self::nextStream($handle,$compress);
+					fclose($handle);
+					return $res;
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,64 @@
+<? 
+
+class CPTicket extends CTicket
+{
+	function etablissementsForCurrentUser($kind='ACCESS')
+	{
+		$r = array();
+		global $DB;
+		if ($u = CUser::getCurrentUser())
+		{
+			if ($u->administrator) return CEtablissement::objects();
+			else {
+				$query = sprintf("SELECT t_etablissement.* FROM t_etablissement, t_ticket
+								WHERE t_etablissement.id = t_ticket.tvalue
+								AND t_ticket.tmodule = %s
+								AND t_ticket.tzone = %s 
+								AND t_ticket.tuser = %s 
+								ORDER BY t_etablissement.nom",
+								$DB->STRING("ETABLISSEMENT"),
+								$DB->STRING($kind),
+								$u->id
+								);
+				return CEtablissement::objectsWithQuery($query);
+			}
+		}
+		return $r;
+	}
+	
+	function usersForEtablissement($etablissement_id)
+	{
+		global $DB;
+		$query = sprintf("SELECT t_users.* FROM t_users, t_ticket
+						WHERE t_users.id = t_ticket.tuser
+						AND t_ticket.tmodule = %s
+						AND t_ticket.tzone = %s
+						AND t_ticket.tvalue = %s
+						ORDER BY t_users.nom",
+						$DB->STRING("ETABLISSEMENT"),
+						$DB->STRING("ACCESS"),
+						$DB->INT($etablissement_id)
+						);
+		return CUser::query($query);
+	}
+	
+	function registerUserForEtablissement($user_id,$etablissement_id)
+	{
+		CPTicket::createUserTicket($user_id,"ETABLISSEMENT","ACCESS",$etablissement_id);
+	}
+/*	function setRoleForUserEtabissement($role,$user_id,$etablissement_id)
+	{
+		CPTicket::updateZoneForUserModuleValue($role,$user_id,"ETABLISSEMENT_ROLE",$etablissement_id);
+	}
+	function roleForUserEtablissement($user_id,$etablissement_id)
+	{
+		global $DB;
+		$q = sprintf("SELECT tzone FROM t_ticket WHERE tuser=%s AND tmodule=%s AND tvalue=%s",
+						$DB->INT($user_id),
+						$DB->STRING("ETABLISSEMENT_ROLE"),
+						$DB->STRING($etablissement_id));
+						
+		return $DB->oneValue($q);
+	} */
+
+}

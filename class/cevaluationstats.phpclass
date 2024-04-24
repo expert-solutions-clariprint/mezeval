@@ -1,0 +1,366 @@
+<?
+/*
+
+*/
+
+class CEvaluationStats
+{
+	var $datas = null;
+	var $evolutions = null;
+	var $classe_id;
+	var $date_debut=null;
+	var $date_fin=null;
+	var $stat_width = 240;
+	var $parents;
+	var $childs;
+	var $keyprefix="";
+	var $mode_eleve = 0;
+	var $deep2hide = 4;
+	var $eleve_id = 0;
+	
+	var $presentDetails = false;
+
+	var $affiche_evolutions = 0;
+	
+	var $a_color;
+	var $b_color;
+	var $c_color;
+	var $z_color;
+	
+	var $mode_referentiel;
+	
+	var $affichage_masquer_non_evalue;
+	var $affichage_lien_historique = false;
+	
+	var $periodes; // optionel : tableau de CPeriode
+	
+	function CEvaluationStats($classe_id,$date_debut=null,$date_fin=null)
+	{
+		$this->datas = array();
+		$this->evolutions = array();
+		$this->childs = array();
+		$this->classe_id = $classe_id;
+		$this->date_debut = $date_debut;
+		$this->date_fin = $date_fin;
+	}
+	
+	function addDatasAslist($comp_id,$datas)
+	{
+///		CDebug::TRACE(0,sprintf("addDatasAslist(%s,%s)",$comp_id,print_r($datas,true)));
+		$r = $this->datas[$this->keyprefix ."c$comp_id"];
+		if (!$r) $r = array();
+		foreach($datas as  $v)
+		{
+			$r[$v] += 1;
+		}
+		$this->datas[$this->keyprefix . "c$comp_id"] = $r;
+	}
+	function addDatasWithKeys($comp_id,$datas)
+	{
+		if ($datas)
+		{
+//			CDebug::TRACE(0,sprintf("addDatasWithKeys(%s,%s) ",$comp_id,print_r($datas,true)));
+			$r = $this->datas[$this->keyprefix ."c$comp_id"];
+			if (!$r) $r = array();
+			foreach($datas as  $k => $v)
+			{
+				$r[$k] += $v;
+			}
+			$this->datas[$this->keyprefix . "c$comp_id"] = $r;
+		}
+	}
+	function addEvolutions($comp_id,$datas)
+	{
+//		CDebug::TRACE(0,"addEvolutions($comp_id,$datas)");
+		$r = $this->evolutions[$this->keyprefix ."c$comp_id"];
+		if (!$r) $r = array();
+		foreach($datas as $v)
+		{
+			$r[$v] += 1;
+			$f['n'] += 1;
+		}
+		$this->evolutions[$this->keyprefix . "c$comp_id"] = $r;
+	}
+	
+	function addChilds($comp_id,$datas)
+	{
+		$this->childs["c$comp_id"] = $datas;
+	}
+	function build($parent_id = 0)
+	{
+		$this->buildTree($parent_id);
+		$this->buildCumuls($parent_id);
+	}
+	function buildTree($parent_id = 0)
+	{
+		CDebug::TRACE(0,"build($parent_id)");
+		if ($parent_id == 0) $subs = CProgression::parentsForClasse($this->classe_id);
+		else  $subs = CProgression::objectForParent($parent_id);
+		if (count($subs) > 0)
+		{
+			CDebug::TRACE(0,"===> as subs");
+			$this->addChilds($parent_id,$subs);
+			foreach($subs as $s)
+			{
+				$r = $this->buildTree($s->id);
+			}
+		}
+		return null;
+	}
+	function buildCumuls($parent_id = 0)
+	{
+		$subs = $this->childs["c$parent_id"];
+		if ($subs)
+		{
+			foreach($subs as $s)
+			{
+				$r = $this->buildCumuls($s->id);
+				$this->addDatasWithKeys($parent_id,$r);
+			}
+		} else {
+			$r = CEvaluationEleve::resultatsForProgressionEleve($parent_id,$this->eleve_id,$this->date_debut,$this->date_fin,1);
+			if ($this->eleve_id)
+				$this->addDatasAslist($parent_id,$r);
+			else $this->addDatasWithKeys($parent_id,$r);
+		}
+		return $this->datas[$this->keyprefix ."c$parent_id"];
+	}
+	
+	function updatesData($progression_id=0)
+	{
+		CDebug::TRACE(0,"CEvaluationStats::updatesData($progression_id)");
+		if ($subs = $this->childs["c$progression_id"])
+		{
+			foreach($subs as $s)
+			{
+				$r = $this->updatesData($s->id);
+				$this->addDatasWithKeys($progression_id,$r);
+			}
+		} else {
+			$r = CEvaluationEleve::resultatsForProgressionEleve($progression_id,$this->eleve_id,$this->date_debut,$this->date_fin,1);
+			if ($this->eleve_id)
+				$this->addDatasAslist($progression_id,$r);
+			else $this->addDatasWithKeys($progression_id,$r);
+		}
+		return $this->datas[$this->keyprefix ."c$progression_id"];
+	}
+	
+	function showtablecell($v,$tot,$title,$color)
+	{
+		if ($tot > 0)
+		{
+			$width = $this->stat_width / 4;
+			$widthA =  ($width * $v) / $tot;
+			$widthB =  $width - $widthA;
+			if ($v > 0) {
+			?><td style="border: 1px solid #E0E0E0; width: <?= $widthA ?>px; background-color: <?= $color ?>" title="<?= $title ?> : <?= $v ?> / <?= $tot ?> (<?= number_format(100*$v/$tot,2) ?>%)"></td><? }
+			
+			if ($v < $tot) { ?>
+			<td style="border: 1px solid #E0E0E0 ; width: <?= $widthB ?>px"></td><? }
+		}
+	}
+	
+	function showtable($n_a,$n_b,$n_c,$n_z,$cid=0,$pid=0,$subs=null)
+	{
+		if ($subs) $bw = 1; else $bw = 0;
+        
+		?><img <? if ($this->presentDetails && $cid && $subs) { ?> class="detailsOnClick stat_img" onclick="presentDetails(<?= $cid ?>,<?= $pid ?>)" <? } else printf('class="stat_img"');
+		?> src="graph_abc.php?border_width=<?= $bw ?>&width=<?= $this->stat_width ?>&z=<?= $n_z ?>&b=<?= $n_b ?>&c=<?= $n_c ?>&a=<?= $n_a ?>&<?= CClasse::url_colors() ?>"><? 
+	}
+	
+	function showStatsAsTable($classe_id,$parent = 0,$deep=1)
+	{
+		
+		$subs = $this->childs["c$parent"];
+		if ($subs)
+		{
+			foreach($subs as $c) { 
+				$nsubs = $this->childs["c". $c->id];
+				$values = array();
+				if ($this->periodes)
+				{
+					foreach($this->periodes as $p)
+					{
+					 	if ($d = $this->datas["p" . $p->id ."|c".$c->id])
+							$values[$p->id] = $d;
+					}
+				} else $values = $this->datas["c".$c->id];
+				if (!$this->affichage_masquer_non_evalue || $values)
+				{
+								
+				?>
+				
+		<tr class="niveau<?= $deep ?> <? if (!$nsubs) echo "nofolder" ?> <? if ($deep < $this->deep2hide) echo("openfolder"); ?>"
+			onmouseover="style.backgroundColor='#F0F0F0';"
+			onmouseout="style.backgroundColor='#FFFFFF';"
+			
+			treeviewdeep="<?= $deep ?>" <? 
+			if ($deep > $this->deep2hide) { ?>style="display: none"<? } ?>>
+			<td class="folderstatus"  <? if ($nsubs) { ?>onclick="switchTreeView(event,this.parentNode)"<? } ?>></td>
+			<td class="code"><?= $c->code ?> </td>
+			<td class="intitule icon"><?= $c->intitule ?></td>
+			<td class="code"><?= $c->code_socle ?> </td>
+			<td class="code"><?= $c->code_b2i ?> </td>
+			<td class="code"><?= $c->code_langue ?> </td><?
+			
+			if ($this->periodes)
+			{
+				foreach($this->periodes as $p)
+				{
+				 	$d = $values[$p->id];
+					$n_a = $d[$this->keyprefix .'a'];
+					$n_b = $d[$this->keyprefix .'b'];
+					$n_c = $d[$this->keyprefix .'c'];
+					$n_x = $d[$this->keyprefix .'x'];
+					$tot = $n_x  + $n_b + $n_c + $n_a;
+					$stat_width = $this->stat_width;
+					if ($p->id) $pid = $p->id; else $pid = 0;
+                    if ($deep > 1 || !array_key_exists("masquer_niveau_un",$_GET)) 
+                    { ?><td><?= $this->showtable($n_a,$n_b,$n_c,$n_x,$c->id,$pid,count($nsubs) == 0) ?></td><? }
+				}
+			} else 
+			{
+			 	$d = $values;
+				$n_a = $d[$this->keyprefix .'a'];
+				$n_b = $d[$this->keyprefix .'b'];
+				$n_c = $d[$this->keyprefix .'c'];
+				$n_x = $d[$this->keyprefix .'x'];
+				$tot = $n_x  + $n_b + $n_c + $n_a;
+				$stat_width = $this->stat_width;
+
+			?><td><?= $this->showtable($n_a,$n_b,$n_c,$n_x,$c->id,0) ?></td><? }
+			
+			if ($this->affichage_lien_historique)
+			{
+				echo "<td>";
+				if (!$nsubs)
+				{
+					if ($this->eleve_id)
+						printf("<div onclick='showProgessionEleve(this,%d,%d)' style='cursor: pointer'><img src='img/historique.gif'></div>",
+							$c->id,
+							$this->eleve_id);
+					else 
+						printf("<div onclick='showProgessionEleve(this,%d,null)' style='cursor: pointer'><img src='img/historique.gif'></div>",
+							$c->id);
+				}
+				echo "</td>";
+			}
+			$this->showStatsAsTable($classe_id,$c->id,$deep + 1); 
+			}
+			}
+		}
+	}
+	function setColorsFromClasse($classe)
+	{
+		$this->setColors($classe->a_color(),
+						$classe->b_color(),
+						$classe->c_color(),
+						$classe->z_color());
+	}
+	function setColors($a,$b,$c,$z)
+	{
+		$this->a_color = $a;
+		$this->b_color = $b;
+		$this->c_color = $c;
+		$this->x_color = $x;
+	}
+	function color($c)
+	{
+		switch($c)
+		{
+			case "a" : return $this->a_color;
+			case "b" : return $this->b_color;
+			case "c" : return $this->c_color;
+			case "x" : return $this->x_color;
+		}
+		return $this->z_color;
+	}
+	
+	function showStatsForSocle($node,$deep =1)
+	{
+		
+		$search_key = $node->searchKey();
+		$children= $node->childNodes;
+		$values = array();
+		if ($this->periodes)
+		{
+			foreach ($this->periodes as $p)
+			{
+				$vals =  CEvaluationEleve::resultatsForClasseAndSocle($this->classe_id,$node->type(),$search_key,$this->eleve_id,$p->debut,$p->fin,1);
+				if ($vals)
+					$values[$p->id] = $vals;
+			}
+		} else $values = $vals =  CEvaluationEleve::resultatsForClasseAndSocle($this->classe_id,$node->type(),$search_key,$this->eleve_id,$this->date_debut,$this->date_fin,1);
+
+		if (!$this->affichage_masquer_non_evalue || $values)
+		{
+		?>
+		<tr class="niveau<?= $deep ?> <? if (!$children) echo("nofolder") ?> <? if ($deep < $this->deep2hide) { ?>openfolder"<? } ?>"
+			onmouseover="style.backgroundColor='#F0F0F0';" onmouseout="style.backgroundColor='#FFFFFF';"
+			treeviewdeep="<?= $deep ?>" <? if ($deep > $this->deep2hide) { ?>style="display: none"<? } ?>>
+			<td class="folderstatus" onclick="switchTreeView(event,this.parentNode)">
+			</td>
+			<td>
+				<?= $node->code ?>
+			</td>
+			<td class="icon">
+				<?= $node->intitule ?>
+			</td>
+			<? if ($this->periodes) {
+				foreach ($this->periodes as $p) {
+					$vals = $values[$p->id]; // CEvaluationEleve::resultatsForClasseAndSocle($this->classe_id,$node->type(),$search_key,$this->eleve_id,$p->debut,$p->fin,1);
+				?><td><? if ($vals) $this->showtable($vals['a'],$vals['b'],$vals['c'],$vals['z'] + $vals[''] + $vals['x']);  ?></td><?
+				}
+			} else { ?>
+			<td>
+				<? 
+				$vals = $values;
+				if ($vals) {
+						$this->showtable($vals['a'],$vals['b'],$vals['c'],$vals['z'] + $vals['']);
+					} ?>
+			</td><? } ?>
+		</tr><?
+		$deep++;
+		foreach($children as $s) $this->showStatsForSocle($s,$deep);
+		}
+	}
+	function showTableEvolution($vals)
+	{
+		if (count($vals) > 0)
+		{
+			$stat_width = $this->stat_width;
+			$width = $this->stat_width / count($vals);
+			?><img class="stat_img_evolution stat_img" style="margin-top: 3px; border-top: 1px #E0E0E0 solid;" src="bars.php?width=100&height=20&colors[a]=<?= urlencode($this->a_color) ?>&colors[b]=<?= urlencode($this->b_color) ?>&colors[c]=<?= urlencode($this->c_color) ?>&colors[z]=<?= urlencode($this->z_color) ?>&<? foreach($vals as $v) printf('&serie[]=%s',$v); ?>"><?
+		}
+	}
+	function showEvolForSocle($node,$deep =1)
+	{
+		$search_key = $node->searchKey();
+		?>
+		<tr class="niveau<?= $deep ?>" onmouseover="style.backgroundColor='#F0F0F0';" onmouseout="style.backgroundColor='#FFFFFF';" onclick="switchTreeView(event,this)"
+			treeviewdeep="<?= $deep ?>" <? if ($deep > $this->deep2hide) { ?>style="display: none"<? } ?>>
+			<td>
+				<?= $node->code ?>
+			</td>
+			<td>
+				<?= $node->intitule ?>
+			</td>
+			<? if ($this->periodes) {
+				foreach ($this->periodes as $p) {
+					$vals =  CEvaluationEleve::evolutionForClasseAndSocle($this->classe_id,$search_key,$this->eleve_id,$p->debut,$p->fin);
+				?><td><? if ($vals) $this->showtable($vals['a'],$vals['b'],$vals['c'],$vals['z']);  ?></td><?
+				}
+			} else { ?>
+			<td>
+				<? 	$vals =  CEvaluationEleve::evolutionForClasseAndSocle($this->classe_id,$search_key,$this->eleve_id,$this->date_debut,$this->date_fin);
+					if ($vals) {
+						$this->showtable($vals['a'],$vals['b'],$vals['c'],$vals['z']);
+					} ?>
+			</td><? } ?>
+		</tr><?
+		$deep++;
+		foreach($node->childNodes as $s) $this->showStatsForSocle($s,$deep);
+	}
+	
+	function __toString() { return "[CEvaluationStats]"; }
+}
